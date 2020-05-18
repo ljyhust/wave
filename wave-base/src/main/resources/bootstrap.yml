@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: wave-base
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        shared-configs[0]:
+          data-id: wave-base.properties
+      discovery:
+        server-addr: 192.168.2.21:8848
