@@ -8,5 +8,30 @@ spring:
         namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
         shared-configs[0]:
           data-id: wave-base.properties
+        timeout: 10000
+        config-retry-time: 2
+        #context-path: /wave-base-api
       discovery:
         server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        heart-beat-timeout: 10000
+  datasource:
+    password: admin
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3306/wave-base?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    username: root
+    hikari:
+      maximum-pool-size: 15
+      auto-commit: true
+      minimum-idle: 5
+      max-lifetime: 180000
+      connection-timeout: 3000
+      connection-test-query: SELECT 1 FROM DUAL
+
+# 本地配置被远程配置中心覆盖了
+server:
+  port: 9002
+logging:
+  level:
+    root: debug

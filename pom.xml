@@ -15,11 +15,18 @@
         <module>wave-base</module>
     </modules>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.1.RELEASE</version>
+        <relativePath/>
+    </parent>
     <properties>
         <project.version>1.0.0-SNAPSHOT</project.version>
         <alibaba.cloud.version>2.2.0.RELEASE</alibaba.cloud.version>
         <mybatis-plus.version>3.3.0</mybatis-plus.version>
         <lombok.version>1.16.20</lombok.version>
+        <mysql-conn.version>5.1.45</mysql-conn.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -47,6 +54,11 @@
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-conn.version}</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -61,8 +73,9 @@
 
     <repositories>
         <repository>
-            <id>maven-ali</id>
+            <id>maven-ali-2</id>
             <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
             </releases>
