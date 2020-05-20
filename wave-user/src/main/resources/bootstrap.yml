@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        shared-configs[0]:
+          data-id: wave-user.properties
+        timeout: 10000
+        config-retry-time: 2
+      discovery:
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        #心跳超时时间，单位 millsecond
+        heart-beat-timeout: 10000
+  application:
+    name: wave-user
+server:
+  servlet:
+    context-path: /wave-user

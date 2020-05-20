@@ -28,10 +28,11 @@ spring:
       max-lifetime: 180000
       connection-timeout: 3000
       connection-test-query: SELECT 1 FROM DUAL
-
 # 本地配置被远程配置中心覆盖了
 server:
   port: 9002
+  servlet:
+    context-path: /wave-base
 logging:
   level:
     root: debug

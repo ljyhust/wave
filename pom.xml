@@ -13,6 +13,7 @@
         <module>wave-admin</module>
         <module>wave-common</module>
         <module>wave-base</module>
+        <module>wave-trip</module>
     </modules>
 
     <parent>
@@ -27,6 +28,7 @@
         <mybatis-plus.version>3.3.0</mybatis-plus.version>
         <lombok.version>1.16.20</lombok.version>
         <mysql-conn.version>5.1.45</mysql-conn.version>
+        <common-lang3.version>3.8.1</common-lang3.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -60,8 +62,8 @@
                 <version>${mysql-conn.version}</version>
             </dependency>
         </dependencies>
-
     </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -69,21 +71,35 @@
             <optional>true</optional>
             <version>${lombok.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${common-lang3.version}</version>
+        </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
+    <profiles>
+        <profile>
             <id>maven-ali-2</id>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
-        </repository>
-    </repositories>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>maven-ali-2</id>
+                    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+                    <layout>default</layout>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
 </project>
