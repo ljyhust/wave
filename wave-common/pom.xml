@@ -12,4 +12,10 @@
     <artifactId>wave-common</artifactId>
     <description>公共组件</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+    </dependencies>
 </project>

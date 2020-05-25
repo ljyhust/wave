@@ -2,12 +2,14 @@ package com.wave.user.dto.req;
 
 import lombok.Data;
 
-@Data
-public class UserRegistryReqDto {
+import javax.validation.constraints.NotBlank;
 
-    private String userName;
+@Data
+public class UserInfoRegisteReqDto {
 
     private String userId;
 
+    @NotBlank
     private String mobileNo;
+
 }

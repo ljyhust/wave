@@ -29,6 +29,8 @@
         <lombok.version>1.16.20</lombok.version>
         <mysql-conn.version>5.1.45</mysql-conn.version>
         <common-lang3.version>3.8.1</common-lang3.version>
+        <jedis.version>2.9.0</jedis.version>
+        <redisson.version>3.13.0</redisson.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -60,6 +62,19 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql-conn.version}</version>
+            </dependency>
+
+            <!-- Jedis -->
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
+            </dependency>
+            <!-- redisson -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
