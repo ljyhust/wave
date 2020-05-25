@@ -33,7 +33,7 @@ public class UserInfoController {
         return PublicResponseUtil.publicResponseDto();
     }
 
-    @PostMapping("info/{userId}")
+    @RequestMapping("info/{userId}")
     public PublicResponseObjDto getUserInfo(@PathVariable("userId") String userId) throws Exception {
 
         UserInfoDto userInfo = userInfoService.getUserInfo(userId);
