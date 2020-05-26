@@ -1,6 +1,7 @@
 package com.wave.demo.redisopt;
 
 import com.wave.operator.DelayQueueRedisOpt;
+import org.apache.commons.lang3.RandomUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,6 @@ public class DelayQueueRedisDemo implements InitializingBean{
                 Collection<Object> objects = delayQueueRedisOpt.pollByScore(key, 0, currentTimeMillis);
                 // TODO handle
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, RandomUtils.nextLong(100, 1000), 200, TimeUnit.MILLISECONDS);
     }
 }
