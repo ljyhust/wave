@@ -12,4 +12,6 @@ public class UserInfoRegisteReqDto {
     @NotBlank
     private String mobileNo;
 
+    private String password;
+
 }

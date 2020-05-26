@@ -34,9 +34,9 @@ public class UserInfoServiceImpl implements UserInfoService{
 
     @Override
     public void registerUser(UserInfoRegisteReqDto registryReqDto) throws WaveException {
-        // 查询是否有同名userId
+        // 查询是否有同名mobile
         QueryWrapper<UserInfoEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userId", registryReqDto.getUserId()).eq("status", WaveConstants.NORMAL_STATUS);
+        queryWrapper.eq("mobile_no", registryReqDto.getMobileNo()).eq("status", WaveConstants.NORMAL_STATUS);
         List<UserInfoEntity> entityList = userInfoDao.selectList(queryWrapper);
         if (!CollectionUtils.isEmpty(entityList)) {
             throw new WaveException(WaveException.INVALID_PARAM, "账号已注册");
@@ -44,8 +44,8 @@ public class UserInfoServiceImpl implements UserInfoService{
         // 如有返回错误
         UserInfoEntity userInfoEntity = new UserInfoEntity();
         userInfoEntity.setMobileNo(registryReqDto.getMobileNo());
-        userInfoEntity.setUserId(registryReqDto.getUserId());
-        userInfoEntity.setUserName(registryReqDto.getUserId());
+        userInfoEntity.setUserId(registryReqDto.getMobileNo());
+        userInfoEntity.setUserName(registryReqDto.getMobileNo());
         userInfoDao.insert(userInfoEntity);
     }
 
