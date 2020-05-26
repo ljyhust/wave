@@ -1,5 +1,6 @@
 package com.wave.demo.config;
 
+import com.wave.operator.DelayQueueRedisOpt;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -27,4 +28,10 @@ public class RedissonConfig {
         config.useSingleServer().setAddress(redisAddress).setTimeout(redisTimeout).setPassword(redisPasswd);
         return Redisson.create(config);
     }
+
+    @Bean
+    public DelayQueueRedisOpt delayQueueRedisOpt() {
+        return new DelayQueueRedisOpt(getRedisClient());
+    }
+
 }
