@@ -31,6 +31,7 @@
         <common-lang3.version>3.8.1</common-lang3.version>
         <jedis.version>2.9.0</jedis.version>
         <redisson.version>3.13.0</redisson.version>
+        <sharding.version>4.0.1</sharding.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -75,6 +76,19 @@
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
                 <version>${redisson.version}</version>
+            </dependency>
+
+            <!-- sharding jdbc -->
+            <dependency>
+                <groupId>org.apache.shardingsphere</groupId>
+                <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+                <version>${sharding.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.shardingsphere</groupId>
+                <artifactId>sharding-orchestration-core</artifactId>
+                <version>${sharding.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
