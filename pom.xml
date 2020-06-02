@@ -31,7 +31,7 @@
         <common-lang3.version>3.8.1</common-lang3.version>
         <jedis.version>2.9.0</jedis.version>
         <redisson.version>3.13.0</redisson.version>
-        <sharding.version>4.0.1</sharding.version>
+        <sharding.version>4.1.0</sharding.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -87,7 +87,7 @@
 
             <dependency>
                 <groupId>org.apache.shardingsphere</groupId>
-                <artifactId>sharding-orchestration-core</artifactId>
+                <artifactId>sharding-jdbc-orchestration</artifactId>
                 <version>${sharding.version}</version>
             </dependency>
         </dependencies>
