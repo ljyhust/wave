@@ -63,7 +63,8 @@ public class DelayQueueRedisOpt<T>{
     public Collection<T> pollByScore(String key, double min, double max) {
         RScoredSortedSet<T> sortedSet = redissonClient.getScoredSortedSet(key);
         Collection<T> ts = sortedSet.valueRange(min, true, max, true);
-        sortedSet.removeRangeByScore(min, true, max, true);
+        // 删除已消费的元素
+        sortedSet.removeAll(ts);
         return ts;
     }
 }

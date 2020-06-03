@@ -3,7 +3,9 @@ package com.wave.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wave.common.WaveConstants;
 import com.wave.exception.WaveException;
+import com.wave.user.dao.UserAccountDao;
 import com.wave.user.dao.UserInfoDao;
+import com.wave.user.dao.entity.AccountEntity;
 import com.wave.user.dao.entity.UserInfoEntity;
 import com.wave.user.dto.UserInfoDto;
 import com.wave.user.dto.req.UserInfoRegisteReqDto;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +29,9 @@ public class UserInfoServiceImpl implements UserInfoService{
 
     @Autowired
     UserInfoDao userInfoDao;
+
+    @Autowired
+    UserAccountDao userAccountDao;
 
     @Autowired
     RedissonClient redissonClient;
@@ -71,5 +77,33 @@ public class UserInfoServiceImpl implements UserInfoService{
         // 放入缓存，异步？  resDt为空也放入缓存，防止缓存穿透
         bucket.set(resDto, RandomUtils.nextInt(0, 120), TimeUnit.MINUTES);
         return resDto;
+    }
+
+    @Override
+    public UserInfoDto getUserInfoByAccount(String account) throws WaveException {
+
+        // 查询缓存
+        RBucket<UserInfoDto> bucket = redissonClient.getBucket(USER_INFO_KEY + account);
+        UserInfoDto userInfoDto = bucket.get();
+        if (null != userInfoDto) {
+            return userInfoDto;
+        }
+        // 查库获取userId
+        QueryWrapper<AccountEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("account", account);
+        queryWrapper.eq("status", WaveConstants.NORMAL_STATUS);
+        List<AccountEntity> accounts = userAccountDao.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(accounts)) {
+            throw new WaveException(WaveException.INVALID_PARAM, "用户未注册");
+        }
+        if (accounts.size() > 1) {
+            throw new WaveException(WaveException.SERVER_ERROR, "多用户");
+        }
+        Long userId = accounts.get(0).getUserId();
+
+        // 查询user
+        userInfoDto = getUserInfo(userId.toString());
+        bucket.set(userInfoDto, RandomUtils.nextInt(60, 120), TimeUnit.SECONDS);
+        return userInfoDto;
     }
 }

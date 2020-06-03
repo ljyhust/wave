@@ -10,4 +10,6 @@ public interface UserInfoService {
     void registerUser(UserInfoRegisteReqDto registryReqDto) throws WaveException;
 
     UserInfoDto getUserInfo(String userId) throws WaveException;
+
+    UserInfoDto getUserInfoByAccount(String account) throws WaveException;
 }
