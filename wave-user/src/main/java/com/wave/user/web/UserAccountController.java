@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("account")
 public class UserAccountController {
 
     @Autowired
     UserAccountService userAccountService;
-    @PostMapping("/user/registry")
+    @PostMapping("registry")
     public PublicResponseDto registryUser(@Validated AccountRegistryReqDto reqDto) throws WaveException {
         userAccountService.registerUserAccount(reqDto);
         return PublicResponseUtil.publicResponseDto();

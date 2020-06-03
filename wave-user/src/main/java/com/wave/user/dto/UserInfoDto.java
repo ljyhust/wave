@@ -10,7 +10,7 @@ public class UserInfoDto implements Serializable{
     private static final long serialVersionUID = -2610990151763414181L;
     private String userName;
 
-    private String userId;
+    private Long userId;
 
     private String mobileNo;
 

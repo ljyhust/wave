@@ -1,6 +1,7 @@
 package com.wave.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.wave.common.WaveConstants;
 import com.wave.exception.WaveException;
 import com.wave.user.dao.UserAccountDao;
@@ -8,10 +9,11 @@ import com.wave.user.dao.UserInfoDao;
 import com.wave.user.dao.entity.AccountEntity;
 import com.wave.user.dao.entity.UserInfoEntity;
 import com.wave.user.dto.UserInfoDto;
-import com.wave.user.dto.req.UserInfoRegisteReqDto;
+import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -19,9 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -39,7 +39,7 @@ public class UserInfoServiceImpl implements UserInfoService{
     private final String USER_INFO_KEY = "USER_INFO:";
 
     @Override
-    public void registerUser(UserInfoRegisteReqDto registryReqDto) throws WaveException {
+    public void registerUser(UserInfoModifyReqDto registryReqDto) throws WaveException {
         // 查询是否有同名mobile
         QueryWrapper<UserInfoEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("mobile_no", registryReqDto.getMobileNo()).eq("status", WaveConstants.NORMAL_STATUS);
@@ -50,9 +50,34 @@ public class UserInfoServiceImpl implements UserInfoService{
         // 如有返回错误
         UserInfoEntity userInfoEntity = new UserInfoEntity();
         userInfoEntity.setMobileNo(registryReqDto.getMobileNo());
-        userInfoEntity.setUserId(registryReqDto.getMobileNo());
         userInfoEntity.setUserName(registryReqDto.getMobileNo());
         userInfoDao.insert(userInfoEntity);
+    }
+
+    @Override
+    public void userInfoUpdate(UserInfoUpdateReqDto reqDto) throws WaveException {
+        // 查询userId，如果没有，则增加用户信息
+        UserInfoDto userInfo = getUserInfoByAccount(reqDto.getAccount());
+        UserInfoEntity userInfoEntity = new UserInfoEntity();
+        userInfoEntity.setMobileNo(reqDto.getMobileNo());
+        userInfoEntity.setUserName(reqDto.getMobileNo());
+        userInfoEntity.setImageUrl(reqDto.getImageUrl());
+        if (null == userInfo || null == userInfo.getUserId()) {
+            // 新增用户信息
+            userInfoDao.insert(userInfoEntity);
+            // 更新account信息
+            UpdateWrapper<AccountEntity> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("account", reqDto.getAccount()).eq("status", 0);
+
+            AccountEntity accountEntity = new AccountEntity();
+            accountEntity.setUserId(userInfoEntity.getId());
+
+            userAccountDao.update(accountEntity, updateWrapper);
+            return;
+        }
+        // 更新用户信息
+        userInfoEntity.setId(userInfo.getUserId());
+        userInfoDao.updateById(userInfoEntity);
     }
 
     @Override
@@ -64,7 +89,7 @@ public class UserInfoServiceImpl implements UserInfoService{
             return userInfoDto;
         }
         QueryWrapper<UserInfoEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userId).eq("status", WaveConstants.NORMAL_STATUS);
+        queryWrapper.eq("id", userId).eq("status", WaveConstants.NORMAL_STATUS);
         List<UserInfoEntity> entityList = userInfoDao.selectList(queryWrapper);
         boolean empty = CollectionUtils.isEmpty(entityList);
         if (!empty && entityList.size() > 1) {

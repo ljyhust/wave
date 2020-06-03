@@ -4,14 +4,17 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 
+/**
+ * @author lijinyang
+ */
 @Data
-public class UserInfoRegisteReqDto {
+public class UserInfoModifyReqDto {
 
     private String userId;
 
+    private String account;
+
     @NotBlank
     private String mobileNo;
-
-    private String password;
 
 }

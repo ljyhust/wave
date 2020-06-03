@@ -9,9 +9,10 @@ import javax.validation.constraints.NotNull;
 public class UserInfoUpdateReqDto {
 
     @NotBlank
-    private String userName;
+    private String account;
 
-    private String userId;
+    @NotBlank
+    private String userName;
 
     @NotBlank
     private String mobileNo;
