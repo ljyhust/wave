@@ -53,6 +53,7 @@ public class DriverInfoServiceImpl implements DriverInfoService{
 
             AccountEntity accountEntity = new AccountEntity();
             accountEntity.setDriverId(driverInfoEntity.getId());
+            redissonClient.getBucket(DRIVER_INFO_KEY + reqDto.getAccount()).delete();
             accountDao.update(accountEntity, accountUpdateWrapper);
             return;
         }

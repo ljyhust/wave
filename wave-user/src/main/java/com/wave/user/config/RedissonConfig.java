@@ -28,7 +28,7 @@ public class RedissonConfig {
         Config config = new Config();
         config.setTransportMode(TransportMode.NIO);
         config.useSingleServer().setAddress(redisAddress).setTimeout(redisTimeout)
-                .setPassword(redisPasswd).setRetryAttempts(2).setConnectTimeout(connectTimeout);
+                .setPassword(redisPasswd).setRetryAttempts(2).setConnectTimeout(connectTimeout).setKeepAlive(true);
         return Redisson.create(config);
     }
 }
