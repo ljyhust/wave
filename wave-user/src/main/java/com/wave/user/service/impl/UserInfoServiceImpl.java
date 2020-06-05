@@ -71,12 +71,14 @@ public class UserInfoServiceImpl implements UserInfoService{
 
             AccountEntity accountEntity = new AccountEntity();
             accountEntity.setUserId(userInfoEntity.getId());
-
+            // 删除缓存
+            redissonClient.getBucket(USER_INFO_KEY + reqDto.getAccount()).delete();
             userAccountDao.update(accountEntity, updateWrapper);
             return;
         }
-        // 更新用户信息
         userInfoEntity.setId(userInfo.getUserId());
+        // 更新用户信息，删除缓存
+        redissonClient.getBucket(USER_INFO_KEY + userInfo.getUserId()).delete();
         userInfoDao.updateById(userInfoEntity);
     }
 
@@ -89,7 +91,7 @@ public class UserInfoServiceImpl implements UserInfoService{
             return userInfoDto;
         }
         QueryWrapper<UserInfoEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", userId).eq("status", WaveConstants.NORMAL_STATUS);
+        queryWrapper.eq("id", Long.valueOf(userId)).eq("status", WaveConstants.NORMAL_STATUS);
         List<UserInfoEntity> entityList = userInfoDao.selectList(queryWrapper);
         boolean empty = CollectionUtils.isEmpty(entityList);
         if (!empty && entityList.size() > 1) {
@@ -98,9 +100,10 @@ public class UserInfoServiceImpl implements UserInfoService{
         UserInfoDto resDto = new UserInfoDto();
         if (!empty) {
             BeanUtils.copyProperties(entityList.get(0), resDto);
+            resDto.setUserId(entityList.get(0).getId());
         }
         // 放入缓存，异步？  resDt为空也放入缓存，防止缓存穿透
-        bucket.set(resDto, RandomUtils.nextInt(0, 120), TimeUnit.MINUTES);
+        bucket.set(resDto, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
         return resDto;
     }
 
@@ -128,7 +131,7 @@ public class UserInfoServiceImpl implements UserInfoService{
 
         // 查询user
         userInfoDto = getUserInfo(userId.toString());
-        bucket.set(userInfoDto, RandomUtils.nextInt(60, 120), TimeUnit.SECONDS);
+        bucket.set(userInfoDto, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
         return userInfoDto;
     }
 }

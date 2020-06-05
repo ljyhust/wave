@@ -14,8 +14,11 @@ public class RedissonConfig {
     @Value("${redis.address:}")
     private String redisAddress;
 
-    @Value("${redis.timeout:5000}")
+    @Value("${redis.timeout:2000}")
     private int redisTimeout;
+
+    @Value("${redis.connectTimeout:1000}")
+    private int connectTimeout;
 
     @Value("${redis.passwd}")
     private String redisPasswd;
@@ -24,7 +27,8 @@ public class RedissonConfig {
     public RedissonClient getRedisClient() {
         Config config = new Config();
         config.setTransportMode(TransportMode.NIO);
-        config.useSingleServer().setAddress(redisAddress).setTimeout(redisTimeout).setPassword(redisPasswd);
+        config.useSingleServer().setAddress(redisAddress).setTimeout(redisTimeout)
+                .setPassword(redisPasswd).setRetryAttempts(2).setConnectTimeout(connectTimeout);
         return Redisson.create(config);
     }
 }

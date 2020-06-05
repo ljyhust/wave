@@ -18,5 +18,7 @@ public class AccountEntity {
 
     private Long userId;
 
+    private Long driverId;
+
     private Short status;
 }
