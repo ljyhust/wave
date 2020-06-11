@@ -33,6 +33,7 @@
         <jedis.version>2.9.0</jedis.version>
         <redisson.version>3.13.0</redisson.version>
         <sharding.version>4.1.0</sharding.version>
+        <rocketmq.version>4.3.0-SNAPSHOT</rocketmq.version>
 
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -90,6 +91,18 @@
                 <groupId>org.apache.shardingsphere</groupId>
                 <artifactId>sharding-jdbc-orchestration</artifactId>
                 <version>${sharding.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-sunlandssdk</artifactId>
+                <version>${rocketmq.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
