@@ -31,7 +31,7 @@ public class TripOrderEntity implements Serializable{
 
     private String tripEndTime;
 
-    private Short tripState;
+    private Integer tripState;
 
     private String tripInfo;
 
