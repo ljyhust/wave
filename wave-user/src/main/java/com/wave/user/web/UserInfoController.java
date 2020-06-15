@@ -4,7 +4,7 @@ import com.wave.common.PublicResponseDto;
 import com.wave.common.PublicResponseObjDto;
 import com.wave.common.PublicResponseUtil;
 import com.wave.exception.WaveException;
-import com.wave.user.dto.UserInfoDto;
+import com.wave.user.api.dto.UserInfoDto;
 import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;

@@ -1,4 +1,4 @@
-package com.wave.user.dto;
+package com.wave.user.api.dto;
 
 import lombok.Data;
 

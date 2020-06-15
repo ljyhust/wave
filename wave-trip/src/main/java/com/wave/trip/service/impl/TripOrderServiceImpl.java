@@ -1,20 +1,22 @@
 package com.wave.trip.service.impl;
 
+import com.alibaba.csp.sentinel.SphO;
 import com.alibaba.fastjson.JSON;
+import com.wave.common.PublicResponseObjDto;
 import com.wave.exception.WaveException;
 import com.wave.trip.config.WaveTripConstants;
 import com.wave.trip.dao.TripOrderDao;
 import com.wave.trip.dao.entity.TripOrderEntity;
 import com.wave.trip.dto.req.TripNewReqDto;
+import com.wave.trip.rpc.WaveUserFeign;
 import com.wave.trip.service.TripOrderService;
 import com.wave.trip.service.TripOrderState;
+import com.wave.user.api.dto.UserInfoDto;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SunlandsProducer;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +37,16 @@ public class TripOrderServiceImpl implements TripOrderService{
     @Autowired
     RedissonClient redissonClient;
 
+    @Autowired
+    WaveUserFeign waveUserFeign;
+
     @Override
     public void addTripOrder(TripNewReqDto tripNewReqDto) throws WaveException {
         // 获取用户userId
-
+        PublicResponseObjDto<UserInfoDto> accountInfo = waveUserFeign.getUserInfoByAccount(tripNewReqDto.getAccount());
         TripOrderEntity tripOrderEntity = new TripOrderEntity();
         BeanUtils.copyProperties(tripNewReqDto, tripOrderEntity);
+        tripOrderEntity.setUserId(accountInfo.getData().getUserId());
         tripOrderDao.insert(tripOrderEntity);
         boolean resFlag = true;
         // mq发送新订单，如果发送失败怎么处理？回滚？

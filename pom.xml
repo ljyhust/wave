@@ -15,6 +15,7 @@
         <module>wave-base</module>
         <module>wave-trip</module>
         <module>wave-trip-infrastructure</module>
+        <module>wave-user-api</module>
     </modules>
 
     <parent>

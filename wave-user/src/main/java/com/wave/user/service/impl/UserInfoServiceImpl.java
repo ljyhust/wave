@@ -8,7 +8,7 @@ import com.wave.user.dao.UserAccountDao;
 import com.wave.user.dao.UserInfoDao;
 import com.wave.user.dao.entity.AccountEntity;
 import com.wave.user.dao.entity.UserInfoEntity;
-import com.wave.user.dto.UserInfoDto;
+import com.wave.user.api.dto.UserInfoDto;
 import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;

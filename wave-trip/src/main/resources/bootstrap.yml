@@ -8,6 +8,8 @@ spring:
           data-id: wave-trip.properties
         shared-configs[1]:
           data-id: redis.properties
+        shared-configs[2]:
+          data-id: rocketmq.properties
         timeout: 10000
         config-retry-time: 2
       discovery:
@@ -22,3 +24,7 @@ spring:
 server:
   servlet:
     context-path: /wave-trip
+
+feign:
+  sentinel:
+    enabled: true

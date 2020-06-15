@@ -20,7 +20,7 @@ public class TripOrderProducerConfig {
     @Value("${rocketmq.secretKey}")
     private String secretKey;
 
-    @Value("${nameServer}")
+    @Value("${rocketmq.nameServer}")
     private String nameServer;
 
     /**

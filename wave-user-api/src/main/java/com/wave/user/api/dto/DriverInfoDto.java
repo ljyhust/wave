@@ -1,6 +1,5 @@
-package com.wave.user.dto;
+package com.wave.user.api.dto;
 
-import com.wave.user.api.dto.UserInfoDto;
 import lombok.Data;
 
 import java.io.Serializable;
