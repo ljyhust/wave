@@ -20,7 +20,7 @@ public class ApplicationContextAwareConfig implements ApplicationContextAware{
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         log.warn("====> spring application context been finished {}", applicationContext);
-        initDegradeRule();
+        //initDegradeRule();
     }
 
     private void initDegradeRule() {

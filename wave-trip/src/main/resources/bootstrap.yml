@@ -17,6 +17,16 @@ spring:
         namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
         #心跳超时时间，单位 millsecond
         heart-beat-timeout: 10000
+    sentinel:
+      datasource:
+        ds1:
+          nacos:
+            server-addr: 192.168.2.21:8848
+            namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+            data-id: wave-user-degrade-sentinel.json
+            group-id: DEFAULT_GROUP
+            data-type: json
+            rule-type: degrade
   application:
     name: wave-trip
   main:
