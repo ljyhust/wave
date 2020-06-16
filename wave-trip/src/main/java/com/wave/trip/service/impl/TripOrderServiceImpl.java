@@ -2,26 +2,37 @@ package com.wave.trip.service.impl;
 
 import com.alibaba.csp.sentinel.SphO;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wave.common.PublicResponseObjDto;
 import com.wave.exception.WaveException;
 import com.wave.trip.config.WaveTripConstants;
 import com.wave.trip.dao.TripOrderDao;
+import com.wave.trip.dao.TripOrderUserDao;
 import com.wave.trip.dao.entity.TripOrderEntity;
+import com.wave.trip.dao.entity.TripOrderUserEntity;
+import com.wave.trip.dto.req.TripDiscardReqDto;
 import com.wave.trip.dto.req.TripNewReqDto;
 import com.wave.trip.rpc.WaveUserFeign;
 import com.wave.trip.service.TripOrderService;
 import com.wave.trip.service.TripOrderState;
 import com.wave.user.api.dto.UserInfoDto;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SunlandsProducer;
 import org.apache.rocketmq.common.message.Message;
+import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -29,6 +40,8 @@ public class TripOrderServiceImpl implements TripOrderService{
 
     @Autowired
     TripOrderDao tripOrderDao;
+    @Autowired
+    TripOrderUserDao tripOrderUserDao;
 
     @Autowired
     @Qualifier("tripOrderProducer")
@@ -41,14 +54,28 @@ public class TripOrderServiceImpl implements TripOrderService{
     WaveUserFeign waveUserFeign;
 
     @Override
-    public void addTripOrder(TripNewReqDto tripNewReqDto) throws WaveException {
+    public void addTripOrder(TripNewReqDto tripNewReqDto) throws Exception {
+        // 锁，防止重复提单
+        RLock lock = redissonClient.getLock(WaveTripConstants.USER_TRIP_ORDER_CREATE_LOCK + tripNewReqDto.getAccount());
+        if (!lock.tryLock(800, TimeUnit.MILLISECONDS)) {
+            throw new WaveException(WaveException.CONFLICT, "请耐心等待会!");
+        }
+
+        final RBucket<Object> bucket = redissonClient.getBucket(WaveTripConstants.USER_TRIP_STATE_KEY + tripNewReqDto.getAccount());
+        if (bucket.isExists()) {
+            throw new WaveException(WaveException.CONFLICT, "当前正在行程中!");
+        }
         // 获取用户userId
         PublicResponseObjDto<UserInfoDto> accountInfo = waveUserFeign.getUserInfoByAccount(tripNewReqDto.getAccount());
         TripOrderEntity tripOrderEntity = new TripOrderEntity();
         BeanUtils.copyProperties(tripNewReqDto, tripOrderEntity);
         tripOrderEntity.setUserId(accountInfo.getData().getUserId());
         tripOrderDao.insert(tripOrderEntity);
-        boolean resFlag = true;
+
+        TripOrderUserEntity oderUserEntity = new TripOrderUserEntity();
+        oderUserEntity.setTripOrderId(tripOrderEntity.getId());
+        tripOrderEntity.setUserId(tripOrderEntity.getUserId());
+        tripOrderUserDao.insert(oderUserEntity);
         // mq发送新订单，如果发送失败怎么处理？回滚？
         // 异步发送，实现异步回调通知
         // 两种情况分析：1. 服务挂了  2. 网络错误，即远程mq无法访问
@@ -67,7 +94,7 @@ public class TripOrderServiceImpl implements TripOrderService{
                     updateEntity.setId(tripOrderEntity.getId());
                     tripOrderDao.updateById(updateEntity);
                     // FIXME 更新用户当前状态（redis）为行程匹配中？
-                    redissonClient.getBucket(WaveTripConstants.USER_TRIP_STATE_KEY + tripNewReqDto.getAccount());
+                    bucket.set(TripOrderState.DISPATCH_ING, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
                 }
 
                 @Override
@@ -79,7 +106,34 @@ public class TripOrderServiceImpl implements TripOrderService{
         } catch (Exception e) {
             log.error("====> 发送MQ tripOrder 失败 {}", e);
             throw new WaveException(WaveException.SERVER_ERROR, "行程创建失败");
+        } finally {
+            if (null != lock) {
+                lock.unlock();
+            }
         }
         // FIXME 匹配过程中，取消订单如何处理？
+    }
+
+    @Override
+    public void discardTripOrder(TripDiscardReqDto tripDiscardReqDto) throws WaveException {
+        // 查询订单是否存在，如不存在提示已取消
+        // 获取用户userId
+        PublicResponseObjDto<UserInfoDto> accountInfo = waveUserFeign.getUserInfoByAccount(tripDiscardReqDto.getAccount());
+        // 查询用户订单
+        QueryWrapper<TripOrderUserEntity> queryUserTrip = new QueryWrapper<>();
+        queryUserTrip.eq("user_id", accountInfo.getData().getUserId());
+        queryUserTrip.eq("trip_order_id", tripDiscardReqDto.getTripOrderId());
+        List<TripOrderUserEntity> userOrderList = tripOrderUserDao.selectList(queryUserTrip);
+        if (CollectionUtils.isEmpty(userOrderList) || userOrderList.size() > 1) {
+            throw new WaveException(WaveException.SERVER_ERROR, "取消订单异常");
+        }
+        // 取消订单
+        TripOrderEntity tripOrderEntity = new TripOrderEntity();
+        tripOrderEntity.setId(tripDiscardReqDto.getTripOrderId());
+        tripOrderEntity.setTripState(TripOrderState.DISCARD.getState());
+        tripOrderEntity.setTripInfo(tripDiscardReqDto.getDiscardReason());
+
+        redissonClient.getBucket(WaveTripConstants.USER_TRIP_STATE_KEY + tripDiscardReqDto.getAccount()).delete();
+        tripOrderDao.updateById(tripOrderEntity);
     }
 }

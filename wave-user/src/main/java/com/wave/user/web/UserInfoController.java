@@ -26,7 +26,7 @@ public class UserInfoController {
     @PostMapping("updateUser")
     public PublicResponseDto updateUserInfo(@Validated UserInfoUpdateReqDto reqDto) throws Exception {
         userInfoService.userInfoUpdate(reqDto);
-        return new PublicResponseDto();
+        return PublicResponseUtil.publicResponseDto();
     }
 
     @RequestMapping("info/{userId}")
