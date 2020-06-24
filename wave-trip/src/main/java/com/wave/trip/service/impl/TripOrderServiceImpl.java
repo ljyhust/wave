@@ -57,7 +57,7 @@ public class TripOrderServiceImpl implements TripOrderService{
     public void addTripOrder(TripNewReqDto tripNewReqDto) throws Exception {
         // 锁，防止重复提单
         RLock lock = redissonClient.getLock(WaveTripConstants.USER_TRIP_ORDER_CREATE_LOCK + tripNewReqDto.getAccount());
-        if (!lock.tryLock(800, TimeUnit.MILLISECONDS)) {
+        if (!lock.tryLock(200, 800, TimeUnit.MILLISECONDS)) {
             throw new WaveException(WaveException.CONFLICT, "请耐心等待会!");
         }
 
