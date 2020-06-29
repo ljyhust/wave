@@ -42,6 +42,8 @@ public abstract class DelayQueueRedisDemo{
                 // TODO handle
                 log.info("=====> 取出消费数据  {} ", objects);
                 task(objects);
+                // 删除
+                delayQueueRedisOpt.batchDeleteSetObjs(key, objects);
             }
         }, 1, 1, TimeUnit.SECONDS);
     }

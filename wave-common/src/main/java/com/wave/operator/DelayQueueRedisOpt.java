@@ -67,4 +67,9 @@ public class DelayQueueRedisOpt<T>{
         sortedSet.removeAll(ts);
         return ts;
     }
+
+    public void batchDeleteSetObjs(String key, Collection<T> objects) {
+        RScoredSortedSet<Object> scoredSortedSet = redissonClient.getScoredSortedSet(key);
+        scoredSortedSet.removeAll(objects);
+    }
 }

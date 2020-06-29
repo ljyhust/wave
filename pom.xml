@@ -36,7 +36,7 @@
         <sharding.version>4.1.0</sharding.version>
         <rocketmq.version>4.3.0-SNAPSHOT</rocketmq.version>
         <openfeign.version>2.2.0.RELEASE</openfeign.version>
-
+        <log4j-starter.vesion>2.2.1.RELEASE</log4j-starter.vesion>
         <!-- maven version -->
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
         <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
@@ -121,6 +121,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-log4j2</artifactId>
+                <version>${log4j-starter.vesion}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
