@@ -14,6 +14,7 @@ import java.sql.DriverManager;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -65,14 +66,22 @@ public class ConnectionPoolTests{
         Long maxTime = 0L;
         Long minTime = (long)Integer.MAX_VALUE;
         CountDownLatch downLatch = new CountDownLatch(threadSize);
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(threadSize, new Runnable() {
+            @Override
+            public void run() {
+                log.info("=====> start connection pool test");
+            }
+        });
         for(int i = 0; i < threadSize; i++) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    long s1 = System.currentTimeMillis();
                     // 执行语句
                     Connection connection = null;
+                    long s1 = 0L;
                     try {
+                        cyclicBarrier.await();
+                        s1 = System.currentTimeMillis();
                         connection = connectionPool.getConnection();
                         boolean execute = connection.prepareStatement(sql).execute();
                         //log.info("====> sql excute res is {}", execute);
