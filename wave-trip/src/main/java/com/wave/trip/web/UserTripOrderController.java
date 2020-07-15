@@ -8,10 +8,9 @@ import com.wave.trip.service.TripOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotBlank;
 
 @Slf4j
 @RestController
@@ -37,5 +36,15 @@ public class UserTripOrderController {
     public PublicResponseDto discardTripOrderUser(@Validated @RequestBody TripDiscardReqDto tripDiscardReqDto) throws Exception {
         tripOrderService.discardTripOrder(tripDiscardReqDto);
         return PublicResponseUtil.publicResponseDto();
+    }
+
+    /**
+     * 查询是否有订单未完成，如果有返回orderId，没有则返回空
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("myTripOrder/{account}")
+    public PublicResponseDto userTripOrderStatus(@PathVariable("account") @NotBlank String account) throws Exception {
+        return null;
     }
 }

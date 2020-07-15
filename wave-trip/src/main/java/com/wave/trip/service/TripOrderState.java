@@ -21,6 +21,8 @@ public enum TripOrderState {
 
     PAY_OK(20, "支付成功"),
 
+    ORDER_OK(30, "订单结束"),
+
     DISCARD(50, "取消");
 
     /**

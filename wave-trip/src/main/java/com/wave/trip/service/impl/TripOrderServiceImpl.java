@@ -15,6 +15,7 @@ import com.wave.trip.dto.req.TripNewReqDto;
 import com.wave.trip.rpc.WaveUserFeign;
 import com.wave.trip.service.TripOrderService;
 import com.wave.trip.service.TripOrderState;
+import com.wave.trip.vo.TripOrderVo;
 import com.wave.user.api.dto.UserInfoDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
@@ -61,8 +62,8 @@ public class TripOrderServiceImpl implements TripOrderService{
             throw new WaveException(WaveException.CONFLICT, "请耐心等待会!");
         }
 
-        final RBucket<Object> bucket = redissonClient.getBucket(WaveTripConstants.USER_TRIP_STATE_KEY + tripNewReqDto.getAccount());
-        if (bucket.isExists()) {
+        final RBucket<TripOrderEntity> bucket = redissonClient.getBucket(WaveTripConstants.USER_TRIP_ORDER_CURRENT_INFO + tripNewReqDto.getAccount());
+        if (bucket.isExists() && !bucket.get().getTripState().equals(TripOrderState.ORDER_OK)) {
             throw new WaveException(WaveException.CONFLICT, "当前正在行程中!");
         }
         // 获取用户userId
@@ -93,8 +94,9 @@ public class TripOrderServiceImpl implements TripOrderService{
                     updateEntity.setTripState(TripOrderState.DISPATCH_ING.getState());
                     updateEntity.setId(tripOrderEntity.getId());
                     tripOrderDao.updateById(updateEntity);
-                    // FIXME 更新用户当前状态（redis）为行程匹配中？
-                    bucket.set(TripOrderState.DISPATCH_ING, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
+                    tripOrderEntity.setTripState(TripOrderState.DISPATCH_ING.getState());
+                    // FIXME 更新用户当前状态（redis）为行程匹配中？ 如果此时更新失败怎么处理？查询需要从库中查
+                    bucket.set(tripOrderEntity, RandomUtils.nextInt(120, 1200), TimeUnit.MINUTES);
                 }
 
                 @Override
@@ -135,5 +137,30 @@ public class TripOrderServiceImpl implements TripOrderService{
 
         redissonClient.getBucket(WaveTripConstants.USER_TRIP_STATE_KEY + tripDiscardReqDto.getAccount()).delete();
         tripOrderDao.updateById(tripOrderEntity);
+    }
+
+    @Override
+    public TripOrderVo userTripOrderCurrent(String account) throws WaveException {
+        // 查询当前订单缓存
+        RBucket<TripOrderEntity> bucket = redissonClient.getBucket(WaveTripConstants.USER_TRIP_ORDER_CURRENT_INFO + account);
+        TripOrderVo tripOrderVo = new TripOrderVo();
+        // 如果存在，且未结束
+        if (bucket.isExists() && !bucket.get().getTripState().equals(TripOrderState.ORDER_OK)) {
+            TripOrderEntity tripOrderCache = bucket.get();
+            tripOrderVo.setOrderId(tripOrderCache.getId());
+            tripOrderVo.setTripState(tripOrderCache.getTripState());
+            return tripOrderVo;
+        }
+        // 获取当前用户账号的uid
+        PublicResponseObjDto<UserInfoDto> accountInfo = waveUserFeign.getUserInfoByAccount(account);
+        Long uid = accountInfo.getData().getUserId();
+        // 查库获取最新的orderId
+        QueryWrapper<TripOrderUserEntity> userTripQuery = new QueryWrapper<>();
+        userTripQuery.eq("user_id", uid);
+        userTripQuery.last("order by trip_order_id DESC LIMIT 1");
+        TripOrderUserEntity tripOrder = tripOrderUserDao.selectOne(userTripQuery);
+        // 查询是否有效且是否在匹配或其它正常状态中
+
+        return null;
     }
 }

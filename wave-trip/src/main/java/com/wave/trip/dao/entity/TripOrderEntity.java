@@ -19,10 +19,16 @@ public class TripOrderEntity implements Serializable{
 
     private Long driverId;
 
+    /**
+     * 出发地坐标
+     */
     private Double sourceLongit;
 
     private Double sourceLatit;
 
+    /**
+     * 目的地坐标
+     */
     private Double destLongit;
 
     private Double destLatit;
