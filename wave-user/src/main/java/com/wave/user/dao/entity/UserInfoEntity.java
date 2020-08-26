@@ -6,15 +6,13 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 @Data
-@TableName("user_info")
+@TableName("t_user_info")
 public class UserInfoEntity {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     private String userName;
-
-    private String userId;
 
     /** 手机号 **/
     private String mobileNo;

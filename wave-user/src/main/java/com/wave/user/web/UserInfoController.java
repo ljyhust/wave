@@ -3,10 +3,12 @@ package com.wave.user.web;
 import com.wave.common.PublicResponseDto;
 import com.wave.common.PublicResponseObjDto;
 import com.wave.common.PublicResponseUtil;
-import com.wave.user.dto.UserInfoDto;
-import com.wave.user.dto.req.UserInfoRegisteReqDto;
+import com.wave.exception.WaveException;
+import com.wave.user.api.dto.UserInfoDto;
+import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,13 +25,7 @@ public class UserInfoController {
 
     @PostMapping("updateUser")
     public PublicResponseDto updateUserInfo(@Validated UserInfoUpdateReqDto reqDto) throws Exception {
-        //userInfoService.registerUser();
-        return new PublicResponseDto();
-    }
-
-    @PostMapping("register")
-    public PublicResponseDto registerUserInfo(@Validated UserInfoRegisteReqDto reqDto) throws Exception {
-        userInfoService.registerUser(reqDto);
+        userInfoService.userInfoUpdate(reqDto);
         return PublicResponseUtil.publicResponseDto();
     }
 
@@ -38,5 +34,14 @@ public class UserInfoController {
 
         UserInfoDto userInfo = userInfoService.getUserInfo(userId);
         return PublicResponseUtil.okPublicResponseObjDto(userInfo);
+    }
+
+    @PostMapping("info/account/{account}")
+    public PublicResponseObjDto getUserInfoByAccount(@PathVariable("account") String account) throws Exception {
+        UserInfoDto userInfoByAccount = userInfoService.getUserInfoByAccount(account);
+        if (null == userInfoByAccount.getUserId()) {
+            throw new WaveException(WaveException.CLIENT_INVALID_PARAM, "用户未填写信息");
+        }
+        return PublicResponseUtil.okPublicResponseObjDto(userInfoByAccount);
     }
 }

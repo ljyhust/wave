@@ -17,6 +17,8 @@ spring:
         heart-beat-timeout: 10000
   application:
     name: wave-user
+  main:
+    allow-bean-definition-overriding: true
 server:
   servlet:
     context-path: /wave-user

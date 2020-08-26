@@ -1,0 +1,40 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        shared-configs[0]:
+          data-id: wave-trip.properties
+        shared-configs[1]:
+          data-id: redis.properties
+        shared-configs[2]:
+          data-id: rocketmq.properties
+        timeout: 10000
+        config-retry-time: 2
+      discovery:
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        #心跳超时时间，单位 millsecond
+        heart-beat-timeout: 10000
+    sentinel:
+      datasource:
+        ds1:
+          nacos:
+            server-addr: 192.168.2.21:8848
+            namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+            data-id: wave-user-degrade-sentinel.json
+            group-id: DEFAULT_GROUP
+            data-type: json
+            rule-type: degrade
+  application:
+    name: wave-trip
+  main:
+    allow-bean-definition-overriding: true
+server:
+  servlet:
+    context-path: /wave-trip
+
+feign:
+  sentinel:
+    enabled: true
