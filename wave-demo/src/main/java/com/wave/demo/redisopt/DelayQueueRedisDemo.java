@@ -3,6 +3,7 @@ package com.wave.demo.redisopt;
 import com.wave.operator.DelayQueueRedisOpt;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public abstract class DelayQueueRedisDemo{
                 // 删除
                 delayQueueRedisOpt.batchDeleteSetObjs(key, objects);
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, RandomUtils.nextLong(100, 1000), 200, TimeUnit.MILLISECONDS);
     }
 
     public abstract void task(Collection<Object> objects);
