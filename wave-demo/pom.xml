@@ -51,5 +51,10 @@
             <artifactId>jol-core</artifactId>
             <version>0.8</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.10</version>
+        </dependency>
     </dependencies>
 </project>

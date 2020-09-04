@@ -61,7 +61,6 @@ public class TripOrderServiceImpl implements TripOrderService{
         if (!lock.tryLock(200, 800, TimeUnit.MILLISECONDS)) {
             throw new WaveException(WaveException.CONFLICT, "请耐心等待会!");
         }
-
         final RBucket<TripOrderEntity> bucket = redissonClient.getBucket(WaveTripConstants.USER_TRIP_ORDER_CURRENT_INFO + tripNewReqDto.getAccount());
         if (bucket.isExists() && !bucket.get().getTripState().equals(TripOrderState.ORDER_OK)) {
             throw new WaveException(WaveException.CONFLICT, "当前正在行程中!");

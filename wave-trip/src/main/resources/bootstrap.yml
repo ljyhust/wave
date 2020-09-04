@@ -12,6 +12,7 @@ spring:
           data-id: rocketmq.properties
         timeout: 10000
         config-retry-time: 2
+        environment:
       discovery:
         server-addr: 192.168.2.21:8848
         namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
@@ -34,7 +35,8 @@ spring:
 server:
   servlet:
     context-path: /wave-trip
-
+  tomcat:
+    basedir: .
 feign:
   sentinel:
     enabled: true
