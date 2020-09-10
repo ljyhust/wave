@@ -84,6 +84,37 @@ public class UserInfoServiceImpl implements UserInfoService{
     }
 
     @Override
+    public void editUserInfo(UserInfoDto dto) throws WaveException {
+        // 查询id是否存在，存在则 删缓存 更新
+        if (null == dto.getUserId()) {
+            throw new WaveException(WaveException.INVALID_PARAM, "userId不能为空");
+        }
+        RBucket<UserInfoDto> bucket = redissonClient.getBucket(USER_INFO_KEY + dto.getUserId());
+        UserInfoDto userInfoCache = bucket.get();
+        // existUser true-不存在  false-存在
+        boolean existUser = null == userInfoCache;
+        if (existUser) {
+            // 不存在 查库
+            UserInfoEntity entity = userInfoDao.selectById(dto.getUserId());
+            existUser = null == entity;
+        }
+        // 不存在则添加
+        UserInfoEntity userInfoEntityEdit = new UserInfoEntity();
+        userInfoEntityEdit.setNickName(dto.getNickName());
+        userInfoEntityEdit.setMobile(dto.getMobile());
+        userInfoEntityEdit.setEmail(dto.getEmail());
+        userInfoEntityEdit.setImageUrl(dto.getImageUrl());
+        if (existUser) {
+            userInfoDao.insert(userInfoEntityEdit);
+        } else {
+            // 删除缓存后更新
+            bucket.delete();
+            userInfoEntityEdit.setId(dto.getUserId());
+            userInfoDao.updateById(userInfoEntityEdit);
+        }
+    }
+
+    @Override
     public UserInfoDto getUserInfo(String userId) throws WaveException {
         // 查询缓存
         RBucket<UserInfoDto> bucket = redissonClient.getBucket(USER_INFO_KEY + userId);

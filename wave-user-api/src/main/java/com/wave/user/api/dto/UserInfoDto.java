@@ -8,11 +8,13 @@ import java.io.Serializable;
 public class UserInfoDto implements Serializable{
 
     private static final long serialVersionUID = -2610990151763414181L;
-    private String userName;
+    private String nickName;
 
     private Long userId;
 
-    private String mobileNo;
+    private String mobile;
 
     private String imageUrl;
+
+    private String email;
 }

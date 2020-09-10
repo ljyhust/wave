@@ -19,4 +19,10 @@ public class PublicResponseUtil {
         result.setData(data);
         return result;
     }
+
+    public static RestResult okRestResult() {
+        RestResult<Object> result = new RestResult<>();
+        result.setCode(200);
+        return result;
+    }
 }

@@ -38,8 +38,18 @@ public class UserInfoController {
      */
     @PostMapping("editUserInfo/{userId}")
     public RestResult editUserInfo(@PathVariable("userId") Long userId, @Validated UserInfoEditReqDto reqDto) throws WaveException {
-
-        return null;
+        // 判断
+        if (StringUtils.isBlank(reqDto.getEmail()) && StringUtils.isBlank(reqDto.getMobile())) {
+            throw new WaveException(WaveException.INVALID_PARAM, "mobile and email must not be null!");
+        }
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setUserId(userId);
+        userInfoDto.setEmail(reqDto.getEmail());
+        userInfoDto.setMobile(reqDto.getMobile());
+        userInfoDto.setNickName(reqDto.getNickName());
+        userInfoDto.setImageUrl(reqDto.getImgUrl());
+        userInfoService.editUserInfo(userInfoDto);
+        return PublicResponseUtil.okRestResult();
     }
 
     /**

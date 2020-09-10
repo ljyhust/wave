@@ -31,6 +31,7 @@ public class UserAccountServiceImpl implements UserAccountService {
      * 注册账号：
      * 1. 不存在，则先添加t_user_info 再添加 t_account
      * 2. 存在，判断uid != NULL ? return uid : insert user && update account
+     * FIXME 是否需要考虑加锁 lock:account:xxxxx
      * @param reqDto
      * @return
      * @throws WaveException

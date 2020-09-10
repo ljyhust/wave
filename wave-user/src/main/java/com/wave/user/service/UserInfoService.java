@@ -14,4 +14,11 @@ public interface UserInfoService {
     UserInfoDto getUserInfoByAccount(String account) throws WaveException;
 
     void userInfoUpdate(UserInfoUpdateReqDto reqDto) throws WaveException;
+
+    /**
+     * 编辑用户信息
+     * @param dto
+     * @throws WaveException
+     */
+    void editUserInfo(UserInfoDto dto) throws WaveException;
 }
