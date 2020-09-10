@@ -12,4 +12,11 @@ public class PublicResponseUtil {
         resDto.setData(data);
         return resDto;
     }
+
+    public static <T> RestResult okRestResult(T data) {
+        RestResult<T> result = new RestResult<>();
+        result.setCode(200);
+        result.setData(data);
+        return result;
+    }
 }

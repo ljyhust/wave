@@ -3,8 +3,10 @@ package com.wave.user.web;
 import com.wave.common.PublicResponseDto;
 import com.wave.common.PublicResponseObjDto;
 import com.wave.common.PublicResponseUtil;
+import com.wave.common.RestResult;
 import com.wave.exception.WaveException;
 import com.wave.user.api.dto.UserInfoDto;
+import com.wave.user.dto.req.UserInfoEditReqDto;
 import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;
@@ -29,13 +31,35 @@ public class UserInfoController {
         return PublicResponseUtil.publicResponseDto();
     }
 
+    /**
+     * 根据userId编辑用户信息
+     * @return
+     * @throws WaveException
+     */
+    @PostMapping("editUserInfo/{userId}")
+    public RestResult editUserInfo(@PathVariable("userId") Long userId, @Validated UserInfoEditReqDto reqDto) throws WaveException {
+
+        return null;
+    }
+
+    /**
+     * 根据用户id查询用户信息
+     * @param userId
+     * @return
+     * @throws Exception
+     */
     @RequestMapping("info/{userId}")
     public PublicResponseObjDto getUserInfo(@PathVariable("userId") String userId) throws Exception {
-
         UserInfoDto userInfo = userInfoService.getUserInfo(userId);
         return PublicResponseUtil.okPublicResponseObjDto(userInfo);
     }
 
+    /**
+     * 根据用户account查询用户信息
+     * @param account
+     * @return
+     * @throws Exception
+     */
     @PostMapping("info/account/{account}")
     public PublicResponseObjDto getUserInfoByAccount(@PathVariable("account") String account) throws Exception {
         UserInfoDto userInfoByAccount = userInfoService.getUserInfoByAccount(account);

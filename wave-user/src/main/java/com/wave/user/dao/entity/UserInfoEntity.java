@@ -12,12 +12,14 @@ public class UserInfoEntity {
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
-    private String userName;
+    private String nickName;
 
     /** 手机号 **/
-    private String mobileNo;
+    private String mobile;
 
     private String imageUrl;
 
     private Short status;
+
+    private String email;
 }

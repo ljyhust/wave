@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -49,8 +50,8 @@ public class UserInfoServiceImpl implements UserInfoService{
         }
         // 如有返回错误
         UserInfoEntity userInfoEntity = new UserInfoEntity();
-        userInfoEntity.setMobileNo(registryReqDto.getMobileNo());
-        userInfoEntity.setUserName(registryReqDto.getMobileNo());
+        userInfoEntity.setMobile(registryReqDto.getMobileNo());
+        userInfoEntity.setNickName(registryReqDto.getMobileNo());
         userInfoDao.insert(userInfoEntity);
     }
 
@@ -59,8 +60,8 @@ public class UserInfoServiceImpl implements UserInfoService{
         // 查询userId，如果没有，则增加用户信息
         UserInfoDto userInfo = getUserInfoByAccount(reqDto.getAccount());
         UserInfoEntity userInfoEntity = new UserInfoEntity();
-        userInfoEntity.setMobileNo(reqDto.getMobileNo());
-        userInfoEntity.setUserName(reqDto.getMobileNo());
+        userInfoEntity.setMobile(reqDto.getMobileNo());
+        userInfoEntity.setNickName(reqDto.getMobileNo());
         userInfoEntity.setImageUrl(reqDto.getImageUrl());
         if (null == userInfo || null == userInfo.getUserId()) {
             // 新增用户信息
@@ -109,7 +110,6 @@ public class UserInfoServiceImpl implements UserInfoService{
 
     @Override
     public UserInfoDto getUserInfoByAccount(String account) throws WaveException {
-
         // 查询缓存
         RBucket<UserInfoDto> bucket = redissonClient.getBucket(USER_INFO_KEY + account);
         UserInfoDto userInfoDto = bucket.get();
@@ -124,14 +124,33 @@ public class UserInfoServiceImpl implements UserInfoService{
         if (CollectionUtils.isEmpty(accounts)) {
             throw new WaveException(WaveException.INVALID_PARAM, "用户未注册");
         }
-        if (accounts.size() > 1) {
-            throw new WaveException(WaveException.SERVER_ERROR, "多用户");
-        }
-        Long userId = accounts.get(0).getUserId();
 
+        // 取第一个uid不为null的
+        Long userId = null;
+        AccountEntity accountInfo = null;
+        for (AccountEntity accountEntity : accounts) {
+            if (null != accountEntity.getUserId()) {
+                userId = accountEntity.getUserId();
+                accountInfo = accountEntity;
+                break;
+            }
+        }
+
+        if (null == userId) {
+            throw new WaveException(WaveException.INVALID_PARAM, "用户未注册");
+        }
         // 查询user
         userInfoDto = getUserInfo(userId.toString());
         bucket.set(userInfoDto, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
+        // FIXME 异步？去除其它无效的account
+        UpdateWrapper<AccountEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("account", account);
+        updateWrapper.ne("id", accountInfo.getId());
+
+        AccountEntity updateAccount = new AccountEntity();
+        updateAccount.setStatus(WaveConstants.DEL_STATUS);
+        userAccountDao.update(updateAccount, updateWrapper);
         return userInfoDto;
+
     }
 }
