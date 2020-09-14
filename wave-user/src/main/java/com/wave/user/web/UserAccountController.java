@@ -43,6 +43,7 @@ public class UserAccountController {
      */
     @PostMapping("login/{account}")
     public RestResult userLogin(@PathVariable("account") String account) throws WaveException {
+        // 账号密码校验，并返回个人信息
         return null;
     }
 }

@@ -182,6 +182,5 @@ public class UserInfoServiceImpl implements UserInfoService{
         updateAccount.setStatus(WaveConstants.DEL_STATUS);
         userAccountDao.update(updateAccount, updateWrapper);
         return userInfoDto;
-
     }
 }
