@@ -16,4 +16,20 @@ public interface FriendRelationService {
 
     // 查询我的粉丝
     MyFancyUserVo queryMyFancyUserInfo(Long userId) throws WaveException;
+
+    /**
+     * 关注某个用户
+     * @param userId 登录者id
+     * @param focusUserId 要关注的用户id
+     * @throws WaveException
+     */
+    void focusUser(Long userId, Long focusUserId) throws WaveException;
+
+    /**
+     * 取消某人关注
+     * @param userId 登录者id
+     * @param focusUsersId 要取消的用户id
+     * @throws WaveException
+     */
+    void unFocusUser(Long userId, Long focusUserId) throws WaveException;
 }
