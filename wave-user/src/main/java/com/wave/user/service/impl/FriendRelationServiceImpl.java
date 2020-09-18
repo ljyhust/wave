@@ -19,6 +19,8 @@ import com.wave.user.dto.vo.MyFancyUserVo;
 import com.wave.user.service.FriendRelationService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,6 +39,9 @@ public class FriendRelationServiceImpl implements FriendRelationService{
     private final String MY_CONCERN_USER_INFO_PREFIX = "CONCERN_USER_INFOS:";
 
     private final String MY_FANCY_USER_INFO_PREFIX = "FANCY_USER_INFOS:";
+
+    private final String MY_CONCERN_USER_WRITE_READ_LOCK_PREFIX = "CONCERN_USER_WRITE_READ_LOCK:";
+
     @Autowired
     UserConcernDao userConcernDao;
 
@@ -55,11 +61,17 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         if (null != value) {
             return value;
         }
-        List<UserInfoDto> userInfos = getFriendUserInfos(userId, "concernUserId", userConcernDao);
+
         // res vo
         MyConcernUserVo myConcernUserVo = new MyConcernUserVo();
-        myConcernUserVo.setUserId(userId);
-        myConcernUserVo.setConcernUserList(userInfos);
+        readLockCloudRun(MY_CONCERN_USER_WRITE_READ_LOCK_PREFIX + userId, new Runnable() {
+            @Override
+            public void run() {
+                List<UserInfoDto> userInfos = getFriendUserInfos(userId, "concernUserId", userConcernDao);
+                myConcernUserVo.setUserId(userId);
+                myConcernUserVo.setConcernUserList(userInfos);
+            }
+        });
         bucket.setAsync(myConcernUserVo);
         return myConcernUserVo;
     }
@@ -71,9 +83,9 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         if (null != value) {
             return value;
         }
-        List<UserInfoDto> userInfos = getFriendUserInfos(userId, "fancyUserId", userConcernDao);
         // res vo
         MyFancyUserVo myFancyUserVo = new MyFancyUserVo();
+        List<UserInfoDto> userInfos = getFriendUserInfos(userId, "fancyUserId", userConcernDao);
         myFancyUserVo.setUserId(userId);
         bucket.setAsync(myFancyUserVo);
         myFancyUserVo.setFancyUserList(userInfos);
@@ -86,15 +98,21 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         UserConcernEntity userConcernEntity = new UserConcernEntity();
         userConcernEntity.setUserId(userId);
         userConcernEntity.setConcernUserId(focusUserId);
-        // 删除缓存
-        redissonClient.getBucket(MY_FANCY_USER_INFO_PREFIX + focusUserId).delete();
-        redissonClient.getBucket(MY_CONCERN_USER_INFO_PREFIX + userId).delete();
-        userConcernDao.insert(userConcernEntity);
 
         UserFancyEntity userFancyEntity = new UserFancyEntity();
         userFancyEntity.setUserId(focusUserId);
         userFancyEntity.setFancyUserId(userId);
-        userFancyDao.insert(userFancyEntity);
+
+        // 删除缓存
+        writeLockCloudRun(MY_CONCERN_USER_WRITE_READ_LOCK_PREFIX + userId, new Runnable() {
+            @Override
+            public void run() {
+                redissonClient.getBucket(MY_FANCY_USER_INFO_PREFIX + focusUserId).delete();
+                redissonClient.getBucket(MY_CONCERN_USER_INFO_PREFIX + userId).delete();
+                userConcernDao.insert(userConcernEntity);
+                userFancyDao.insert(userFancyEntity);
+            }
+        });
     }
 
     @Override
@@ -104,17 +122,23 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         UpdateWrapper<UserConcernEntity> userConcernEntityUpdateWrapper = new UpdateWrapper<>();
         userConcernEntityUpdateWrapper.eq("user_id", userId);
         userConcernEntityUpdateWrapper.eq("concern_user_id", focusUserId);
-        // 删除缓存
-        redissonClient.getBucket(MY_FANCY_USER_INFO_PREFIX + focusUserId).delete();
-        redissonClient.getBucket(MY_CONCERN_USER_INFO_PREFIX + userId).delete();
-        userConcernDao.update(userConcernEntity, userConcernEntityUpdateWrapper);
 
         UserFancyEntity userFancyEntity = new UserFancyEntity();
         userFancyEntity.setStatus(WaveConstants.DEL_STATUS);
         UpdateWrapper<UserFancyEntity> userFancyEntityUpdateWrapper = new UpdateWrapper<>();
         userFancyEntityUpdateWrapper.eq("user_id", focusUserId);
         userFancyEntityUpdateWrapper.eq("fancy_user_id", userId);
-        userFancyDao.update(userFancyEntity, userFancyEntityUpdateWrapper);
+
+        // 删除缓存
+        writeLockCloudRun(MY_CONCERN_USER_WRITE_READ_LOCK_PREFIX + userId, new Runnable() {
+            @Override
+            public void run() {
+                redissonClient.getBucket(MY_FANCY_USER_INFO_PREFIX + focusUserId).delete();
+                redissonClient.getBucket(MY_CONCERN_USER_INFO_PREFIX + userId).delete();
+                userConcernDao.update(userConcernEntity, userConcernEntityUpdateWrapper);
+                userFancyDao.update(userFancyEntity, userFancyEntityUpdateWrapper);
+            }
+        });
     }
 
     private <T> List<UserInfoDto> getFriendUserInfos(Long userId, String idName, BaseMapper<T> baseMapper) {
@@ -149,5 +173,39 @@ public class FriendRelationServiceImpl implements FriendRelationService{
             concernUserInfos.add(userInfoDto);
         });
         return concernUserInfos;
+    }
+
+    private void writeLockCloudRun(String key, Runnable task) {
+        RLock lock = redissonClient.getReadWriteLock(key).writeLock();
+        try {
+            boolean ifLocked = lock.tryLock(1000, 1000, TimeUnit.MILLISECONDS);
+            if (!ifLocked) {
+                throw new WaveException(WaveException.SERVER_ERROR, "服务忙，请稍候再尝试");
+            }
+            task.run();
+        } catch (Exception e) {
+            log.error("=====> focus user error {}", e);
+        } finally {
+            if (null != lock) {
+                lock.forceUnlockAsync();
+            }
+        }
+    }
+
+    private void readLockCloudRun(String key, Runnable task) {
+        RLock lock = redissonClient.getReadWriteLock(key).readLock();
+        try {
+            boolean ifLocked = lock.tryLock(1000, 1000, TimeUnit.MILLISECONDS);
+            if (!ifLocked) {
+                throw new WaveException(WaveException.SERVER_ERROR, "服务忙，请稍候再尝试");
+            }
+            task.run();
+        } catch (Exception e) {
+            log.error("=====> focus user error {}", e);
+        } finally {
+            if (null != lock) {
+                lock.forceUnlockAsync();
+            }
+        }
     }
 }
