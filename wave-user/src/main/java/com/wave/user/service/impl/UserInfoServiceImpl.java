@@ -2,18 +2,22 @@ package com.wave.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.wave.common.PageVo;
 import com.wave.common.WaveConstants;
 import com.wave.exception.WaveException;
 import com.wave.user.dao.UserAccountDao;
+import com.wave.user.dao.UserConcernDao;
 import com.wave.user.dao.UserInfoDao;
 import com.wave.user.dao.entity.AccountEntity;
+import com.wave.user.dao.entity.UserConcernEntity;
 import com.wave.user.dao.entity.UserInfoEntity;
 import com.wave.user.api.dto.UserInfoDto;
 import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.UserInfoService;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -21,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +39,9 @@ public class UserInfoServiceImpl implements UserInfoService{
 
     @Autowired
     RedissonClient redissonClient;
+    
+    @Autowired
+    UserConcernDao userConcernDao;
 
     private final String USER_INFO_KEY = "USER_INFO:";
 
@@ -113,7 +119,7 @@ public class UserInfoServiceImpl implements UserInfoService{
             userInfoDao.updateById(userInfoEntityEdit);
         }
     }
-
+    
     @Override
     public UserInfoDto getUserInfo(String userId) throws WaveException {
         // 查询缓存

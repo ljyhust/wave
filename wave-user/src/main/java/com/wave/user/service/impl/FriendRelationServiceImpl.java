@@ -5,6 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.wave.common.PageVo;
 import com.wave.common.WaveConstants;
 import com.wave.exception.WaveException;
 import com.wave.user.api.dto.UserInfoDto;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -140,7 +144,37 @@ public class FriendRelationServiceImpl implements FriendRelationService{
             }
         });
     }
-
+    
+    @Override
+    public PageVo myConcernedUsers(Long userId, Integer pageIndex, Integer pageSize) throws WaveException {
+        // 查询我的关注用户
+        MyConcernUserVo myConcernUserVo = queryMyConcernUserInfo(userId);
+        List<UserInfoDto> concernUserList = myConcernUserVo.getConcernUserList();
+        return pageFriendUsers(concernUserList, pageIndex, pageSize);
+    }
+    
+    @Override
+    public PageVo myFancyUsers(Long userId, Integer pageIndex, Integer pageSize) throws WaveException {
+        MyFancyUserVo myFancyUserVo = queryMyFancyUserInfo(userId);
+        List<UserInfoDto> userList = myFancyUserVo.getFancyUserList();
+        return pageFriendUsers(userList, pageIndex, pageSize);
+    }
+    
+    private PageVo pageFriendUsers(List<UserInfoDto> userList, Integer pageIndex, Integer pageSize) throws WaveException {
+        if (CollectionUtils.isEmpty(userList)) {
+            return new PageVo();
+        }
+        // 查询用户信息
+        List<UserInfoDto> res = userList.stream().skip(pageIndex * pageSize).limit(pageSize)
+                .collect(Collectors.toList());
+        PageVo<UserInfoDto> userInfoDtoPageVo = new PageVo<>();
+        userInfoDtoPageVo.setPageIndex(pageIndex);
+        userInfoDtoPageVo.setPageSize(pageSize);
+        userInfoDtoPageVo.setPageCount(userList.size() / pageSize);
+        userInfoDtoPageVo.setRows(res);
+        return userInfoDtoPageVo;
+    }
+    
     private <T> List<UserInfoDto> getFriendUserInfos(Long userId, String idName, BaseMapper<T> baseMapper) {
         // 获取concernUserIds
         QueryWrapper<T> userConcernEntityQueryWrapper = new QueryWrapper<>();

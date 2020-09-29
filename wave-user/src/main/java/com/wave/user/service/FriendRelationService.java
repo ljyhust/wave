@@ -1,5 +1,6 @@
 package com.wave.user.service;
 
+import com.wave.common.PageVo;
 import com.wave.exception.WaveException;
 import com.wave.user.dto.vo.MyConcernUserVo;
 import com.wave.user.dto.vo.MyFancyUserVo;
@@ -32,4 +33,24 @@ public interface FriendRelationService {
      * @throws WaveException
      */
     void unFocusUser(Long userId, Long focusUserId) throws WaveException;
+    
+    /**
+     * 我的关注
+     * @param userId 用户id
+     * @param pageIndex 页码
+     * @param pageSize 页大小
+     * @return
+     * @throws WaveException 错误信息
+     */
+    PageVo myConcernedUsers(Long userId, Integer pageIndex, Integer pageSize) throws WaveException;
+    
+    /**
+     * 我的粉丝-分页
+     * @param userId 用户id
+     * @param pageIndex 页码
+     * @param pageSize 页大小
+     * @return
+     * @throws WaveException
+     */
+    PageVo myFancyUsers(Long userId, Integer pageIndex, Integer pageSize) throws WaveException;
 }
