@@ -9,5 +9,5 @@ public interface EventPublisher {
     
     void addSubscriber(Subscriber sub);
     
-    void publish(Event event);
+    void publish(Event event) throws Exception;
 }

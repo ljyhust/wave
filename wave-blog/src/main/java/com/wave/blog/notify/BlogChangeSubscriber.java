@@ -6,7 +6,7 @@ import com.wave.notify.event.Event;
 public class BlogChangeSubscriber implements Subscriber {
     
     @Override
-    public void onEvent(Event event) {
+    public void onEvent(Event event) throws Exception{
     
     }
     

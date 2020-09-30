@@ -17,7 +17,7 @@ public class DefaultPublisher implements EventPublisher{
     }
     
     @Override
-    public void publish(Event event) {
+    public void publish(Event event) throws Exception{
         for (Subscriber subscriber : subscriberSet) {
             subscriber.onEvent(event);
         }
