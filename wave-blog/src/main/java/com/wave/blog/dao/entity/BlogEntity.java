@@ -9,7 +9,6 @@ import lombok.Data;
 @TableName("t_blog")
 public class BlogEntity {
     
-    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
     
     private String content;

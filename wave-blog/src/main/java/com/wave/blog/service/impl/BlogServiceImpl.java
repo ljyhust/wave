@@ -1,9 +1,11 @@
 package com.wave.blog.service.impl;
 
+import com.wave.blog.config.WaveBlogConstants;
 import com.wave.blog.dao.BlogDao;
 import com.wave.blog.dao.entity.BlogEntity;
 import com.wave.blog.dto.req.BlogChangeRequest;
 import com.wave.blog.service.BlogService;
+import com.wave.consistency.id.IdGeneratorManager;
 import com.wave.exception.WaveException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class BlogServiceImpl implements BlogService {
         blogEntity.setUserId(userId);
         blogEntity.setContent(request.getContent());
         // generator id
+        long id = IdGeneratorManager.getGenerator(WaveBlogConstants.WAVE_BLOG_NAME).nextId(userId);
+        blogEntity.setId(id);
         
         // mq notify blog change
         blogDao.insert(blogEntity);
