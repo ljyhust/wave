@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @TableName("t_blog")
 public class BlogEntity {
@@ -14,6 +16,8 @@ public class BlogEntity {
     private String content;
     
     private Long userId;
+    
+    private Date createTs;
     
     private Short status;
 }

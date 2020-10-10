@@ -25,7 +25,7 @@ public class BlogNotifyCenter {
         addSubscriber(consumer, clazz);
     }
     
-    public static boolean publishEvent(Event e) {
+    public static boolean publishEvent(Event e) throws Exception{
         Class<? extends Event> eventClass = e.getClass();
         String topic = eventClass.getCanonicalName();
         if (!publisherMap.containsKey(topic)) {

@@ -10,7 +10,6 @@ import java.util.BitSet;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-@Slf4j
 public class BitSetTests {
     
     @Test
@@ -35,9 +34,9 @@ public class BitSetTests {
             }
         });
         for (int i = 0; i < 100; i++) {
-            idGererateThread(cyclicBarrier, idGenerator, RandomUtils.getRandomInt(10000)).start();
-            //long l = idGenerator.nextId(RandomUtils.getRandomInt(10000));
-            //System.out.println(l);
+            //idGererateThread(cyclicBarrier, idGenerator, RandomUtils.getRandomInt(10000)).start();
+            long l = idGenerator.nextId(RandomUtils.getRandomInt(10000));
+            System.out.println(l);
         }
     }
     
