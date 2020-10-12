@@ -1,4 +1,4 @@
-package com.wave.user.dto.req;
+package com.wave.common;
 
 import lombok.Data;
 

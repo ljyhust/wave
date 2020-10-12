@@ -160,6 +160,18 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         return pageFriendUsers(userList, pageIndex, pageSize);
     }
     
+    @Override
+    public List<Long> myFancyUserIds(Long userId) throws WaveException {
+        QueryWrapper<UserFancyEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId);
+        queryWrapper.eq("status", WaveConstants.NORMAL_STATUS);
+        List<UserFancyEntity> list = userFancyDao.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        return list.stream().map(UserFancyEntity::getFancyUserId).collect(Collectors.toList());
+    }
+    
     private PageVo pageFriendUsers(List<UserInfoDto> userList, Integer pageIndex, Integer pageSize) throws WaveException {
         if (CollectionUtils.isEmpty(userList)) {
             return new PageVo();

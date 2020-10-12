@@ -5,6 +5,8 @@ import com.wave.exception.WaveException;
 import com.wave.user.dto.vo.MyConcernUserVo;
 import com.wave.user.dto.vo.MyFancyUserVo;
 
+import java.util.List;
+
 /**
  * 好友关系业务类
  * 我的关注
@@ -53,4 +55,12 @@ public interface FriendRelationService {
      * @throws WaveException
      */
     PageVo myFancyUsers(Long userId, Integer pageIndex, Integer pageSize) throws WaveException;
+    
+    /**
+     * 查询我的粉丝userId.
+     * @param userId
+     * @return
+     * @throws WaveException
+     */
+    List<Long> myFancyUserIds(Long userId) throws WaveException;
 }

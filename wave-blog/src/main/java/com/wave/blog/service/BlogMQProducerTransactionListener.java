@@ -5,6 +5,7 @@ import com.wave.blog.config.WaveBlogConstants;
 import com.wave.blog.dao.BlogDao;
 import com.wave.blog.dao.entity.BlogEntity;
 import com.wave.blog.dto.MessageBlogMqDto;
+import com.wave.common.WaveConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionListener;
@@ -40,6 +41,14 @@ public class BlogMQProducerTransactionListener implements TransactionListener {
                     blogEntity.setUserId(messageBlogMqDto.getUserId());
                     blogEntity.setCreateTs(messageBlogMqDto.getCreateTs());
                     blogDao.insert(blogEntity);
+                    log.info("=====> local transaction execute ok {}", message);
+                    break;
+                case WaveBlogConstants.WAVE_BLOG_MSG_TYPE_DELELTE:
+                    MessageBlogMqDto messageBlogMqDtoDEL = JSONObject.parseObject(s, MessageBlogMqDto.class);
+                    BlogEntity blogEntityDel = new BlogEntity();
+                    blogEntityDel.setId(messageBlogMqDtoDEL.getBlogId());
+                    blogEntityDel.setStatus(WaveConstants.DEL_STATUS);
+                    blogDao.updateById(blogEntityDel);
                     log.info("=====> local transaction execute ok {}", message);
                     break;
                 default:

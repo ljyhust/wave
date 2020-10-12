@@ -17,10 +17,10 @@ spring:
         #心跳超时时间，单位 millsecond
         heart-beat-timeout: 10000
   application:
-    name: wave-user
+    name: wave-blog
   main:
     allow-bean-definition-overriding: true
 server:
   servlet:
-    context-path: /wave-user
+    context-path: /wave-blog
   port: 11001

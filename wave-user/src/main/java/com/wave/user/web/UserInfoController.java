@@ -7,21 +7,23 @@ import com.wave.common.PublicResponseUtil;
 import com.wave.common.RestResult;
 import com.wave.exception.WaveException;
 import com.wave.user.api.dto.UserInfoDto;
-import com.wave.user.dto.req.PageQueryRequestDto;
+import com.wave.common.PageQueryRequestDto;
 import com.wave.user.dto.req.UserInfoEditReqDto;
-import com.wave.user.dto.req.UserInfoModifyReqDto;
 import com.wave.user.dto.req.UserInfoUpdateReqDto;
 import com.wave.user.service.FriendRelationService;
 import com.wave.user.service.UserInfoService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("user")
@@ -111,5 +113,20 @@ public class UserInfoController {
             @RequestBody PageQueryRequestDto requestDto) throws Exception {
         PageVo pageVo = relationService.myFancyUsers(userId, requestDto.getPageIndex(), requestDto.getPageSize());
         return PublicResponseUtil.okPublicResponseObjDto(pageVo);
+    }
+    
+    /**
+     * 查询所有的粉丝userIds
+     * @param userId
+     * @param requestDto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("myFancyUserIds/{userId}")
+    public PublicResponseObjDto myFancyUserIdList(@PathVariable("userId") Long userId) throws Exception {
+        List<Long> userIdList = relationService.myFancyUserIds(userId);
+        Map<String, Object> res = new HashMap<>();
+        res.put("fancyUserIdList", userIdList);
+        return PublicResponseUtil.okPublicResponseObjDto(res);
     }
 }

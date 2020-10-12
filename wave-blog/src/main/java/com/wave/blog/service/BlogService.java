@@ -1,5 +1,6 @@
 package com.wave.blog.service;
 
+import com.wave.blog.dto.MessageBlogMqDto;
 import com.wave.blog.dto.req.BlogChangeRequest;
 import com.wave.common.TransactionMQClientResult;
 import com.wave.exception.WaveException;
@@ -20,4 +21,11 @@ public interface BlogService {
      * @throws WaveException
      */
     void blogDelete(Long blogId, Long userId) throws WaveException;
+    
+    /**
+     * consumer blog message.
+     * @param messageBlogMqDto mq blog message.
+     * @throws WaveException
+     */
+    boolean blogMQConsumerHandler(MessageBlogMqDto messageBlogMqDto) throws WaveException;
 }
