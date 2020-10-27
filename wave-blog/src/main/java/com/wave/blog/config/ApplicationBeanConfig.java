@@ -14,6 +14,7 @@ public class ApplicationBeanConfig implements ApplicationListener {
     @Override
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
         // TODO bits = 4L 可配置化
+        // 注册t_blog表的主键生成器
         IdGeneratorManager.registerGenerator(WaveBlogConstants.WAVE_BLOG_NAME, new DefaultServiceIdGenerator(4L));
     }
 }

@@ -27,20 +27,24 @@ public class BitSetTests {
     @Test
     public void testIdGenerator() throws Exception {
         DefaultServiceIdGenerator idGenerator = new DefaultServiceIdGenerator(4L);
-        CyclicBarrier cyclicBarrier = new CyclicBarrier(100, new Runnable() {
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(1000, new Runnable() {
             @Override
             public void run() {
                 System.out.println("===> start");
             }
         });
-        for (int i = 0; i < 100; i++) {
-            //idGererateThread(cyclicBarrier, idGenerator, RandomUtils.getRandomInt(10000)).start();
-            long l = idGenerator.nextId(RandomUtils.getRandomInt(10000));
-            System.out.println(l);
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++) {
+            idGererateThread(cyclicBarrier, idGenerator).start();
+            //long l = idGenerator.nextId(RandomUtils.getRandomInt(10000));
+            //System.out.println(l);
         }
+        long end = System.currentTimeMillis();
+        System.out.println("====> time cost " + (end - start));
+        Thread.sleep(600_000L);
     }
     
-    public Thread idGererateThread(CyclicBarrier cyclicBarrier, ServiceIdGenerator idGenerator, long id) {
+    public Thread idGererateThread(CyclicBarrier cyclicBarrier, ServiceIdGenerator idGenerator) {
         return new Thread(new Runnable() {
             @Override
             public void run() {
@@ -48,13 +52,21 @@ public class BitSetTests {
                     cyclicBarrier.await();
                 } catch (Exception e) {
                     //log.error("====> exception ", e);
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    return;
                 }
-                long l = idGenerator.nextId(id);
+                for (int i = 0; i < 100; i++) {
+                    long l = idGenerator.nextId(RandomUtils.getRandomInt(10000));
+                }
                 //log.info("====> id is {}", l);
-                System.out.println(l);
+                //System.out.println(l);
             }
         });
+    }
+    
+    @Test
+    public void testLeft() {
+        System.out.println(654 << 0);
     }
     
 }

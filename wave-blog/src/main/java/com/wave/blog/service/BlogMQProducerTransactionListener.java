@@ -74,7 +74,9 @@ public class BlogMQProducerTransactionListener implements TransactionListener {
             MessageBlogMqDto messageBlogMqDto = JSONObject.parseObject(s, MessageBlogMqDto.class);
             BlogEntity blogEntity = blogDao.selectById(messageBlogMqDto.getBlogId());
             if (null == blogEntity) {
-                return LocalTransactionState.ROLLBACK_MESSAGE;
+                // 除非确认真的需要rollback，否则不建议直接 rollback，集群中可能是由于其它节点在execute阻塞
+                // 返回 unknow 由mq broker重试查询结果
+                return LocalTransactionState.UNKNOW;
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

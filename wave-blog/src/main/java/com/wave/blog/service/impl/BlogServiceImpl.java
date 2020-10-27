@@ -4,19 +4,25 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.wave.blog.config.WaveBlogConstants;
 import com.wave.blog.dao.BlogDao;
 import com.wave.blog.dao.entity.BlogEntity;
+import com.wave.blog.dto.BlogDto;
 import com.wave.blog.dto.MessageBlogMqDto;
 import com.wave.blog.dto.req.BlogChangeRequest;
 import com.wave.blog.rpc.WaveUserFeignClient;
 import com.wave.blog.service.BlogService;
+import com.wave.common.PageVo;
 import com.wave.common.PublicResponseObjDto;
 import com.wave.common.TransactionMQClientResult;
 import com.wave.common.WaveConstants;
 import com.wave.consistency.id.IdGeneratorManager;
 import com.wave.exception.WaveException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.SendStatus;
@@ -24,23 +30,25 @@ import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
-import org.redisson.api.RScript;
+import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.redisson.client.codec.LongCodec;
-import org.redisson.client.codec.StringCodec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 public class BlogServiceImpl implements BlogService {
     
     private final String FANCY_BLOG_REDIS_PREFIX = "FANCY_BLOG";
+    
+    private final String BLOG_ID_REDIS_PREFIX = "BLOG_ID:";
     
     @Autowired
     BlogDao blogDao;
@@ -53,7 +61,63 @@ public class BlogServiceImpl implements BlogService {
     RedissonClient redisson;
     
     @Override
-    public TransactionMQClientResult blogEdit(BlogChangeRequest request, Long userId) throws WaveException {
+    public PageVo<BlogDto> queryMyBlog(Integer pageIndex, Integer pageSize, Long userId) throws WaveException {
+        QueryWrapper<BlogEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId);
+        queryWrapper.eq("status", WaveConstants.NORMAL_STATUS);
+        Page<Object> page = PageHelper.startPage(pageIndex, pageSize);
+        List<BlogEntity> list = blogDao.selectList(queryWrapper);
+        page.close();
+        PageVo<BlogDto> blogDtoPageVo = new PageVo<>();
+        List<BlogDto> resDto = new ArrayList<>();
+        list.forEach(e -> {
+            BlogDto blogDto = new BlogDto();
+            blogDto.setId(e.getId());
+            blogDto.setContent(e.getContent());
+            resDto.add(blogDto);
+        });
+        blogDtoPageVo.setRows(resDto);
+        blogDtoPageVo.setPageIndex(pageIndex);
+        blogDtoPageVo.setPageSize(pageSize);
+        blogDtoPageVo.setPageCount(page.getPages());
+        blogDtoPageVo.setTotal((int)page.getTotal());
+        return blogDtoPageVo;
+    }
+    
+    @Override
+    public BlogEntity queryBlogById(Long id) throws WaveException {
+        RBucket<BlogEntity> bucket = redisson.getBucket(BLOG_ID_REDIS_PREFIX + id);
+        BlogEntity blogEntity = bucket.get();
+        // 存在，但为空值
+        if (null != blogEntity && null == blogEntity.getId()) {
+            return null;
+        }
+        // query mysql db
+        BlogEntity blog = blogDao.selectById(id);
+        if (null == blog) {
+            blog = new BlogEntity();
+        }
+        bucket.setAsync(blog, RandomUtils.nextInt(60, 120), TimeUnit.MINUTES);
+        return blog;
+    }
+    
+    @Override
+    public void blogEdit(BlogChangeRequest request, Long userId) throws WaveException {
+        //根据id 查帖子
+        BlogEntity blogEntity = queryBlogById(request.getId());
+        //判断是否同一作者
+        if (null == blogEntity || !userId.equals(blogEntity.getUserId())) {
+            throw new WaveException(WaveException.INVALID_PARAM, "invalid blog params");
+        }
+        BlogEntity updateBlog = new BlogEntity();
+        updateBlog.setId(request.getId());
+        updateBlog.setUserId(userId);
+        updateBlog.setContent(request.getContent());
+        blogDao.updateById(updateBlog);
+    }
+    
+    @Override
+    public TransactionMQClientResult blogPublish(BlogChangeRequest request, Long userId) throws WaveException {
         // generator id
         long id = IdGeneratorManager.getGenerator(WaveBlogConstants.WAVE_BLOG_NAME).nextId(userId);
         MessageBlogMqDto messageBlogMqDto = new MessageBlogMqDto();

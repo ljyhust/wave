@@ -87,7 +87,7 @@ public class TripOrderServiceImpl implements TripOrderService{
         try {
             producer.send(message, new SendCallback() {
                 @Override
-                public void onSuccess(SendResult sendResult, Message message) {
+                public void onSuccess(SendResult sendResult) {
                     // 发送成功，修改订单状态为 匹配ing
                     TripOrderEntity updateEntity = new TripOrderEntity();
                     updateEntity.setTripState(TripOrderState.DISPATCH_ING.getState());
@@ -97,7 +97,7 @@ public class TripOrderServiceImpl implements TripOrderService{
                     // FIXME 更新用户当前状态（redis）为行程匹配中？ 如果此时更新失败怎么处理？查询需要从库中查
                     bucket.set(tripOrderEntity, RandomUtils.nextInt(120, 1200), TimeUnit.MINUTES);
                 }
-
+    
                 @Override
                 public void onException(Throwable e) {
                     // 由 client 轮询查询当前是否有行程

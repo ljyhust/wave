@@ -22,3 +22,5 @@ spring:
 server:
   servlet:
     context-path: /wave-user
+  tomcat:
+    max-threads: 500

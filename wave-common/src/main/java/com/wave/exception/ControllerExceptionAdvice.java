@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.sql.SQLTransientConnectionException;
+
 @Slf4j
 @ControllerAdvice
 public class ControllerExceptionAdvice {
@@ -21,6 +23,15 @@ public class ControllerExceptionAdvice {
         return resDto;
     }
 
+    @ExceptionHandler(SQLTransientConnectionException.class)
+    @ResponseBody
+    public PublicResponseDto processSqlConnectionException(SQLTransientConnectionException ex) {
+        ex.printStackTrace();
+        PublicResponseDto resDto = new PublicResponseDto();
+        resDto.setCode(WaveException.OVER_THRESHOLD);
+        resDto.setMsg("sorry， 服务繁忙，请扫稍后重试!");
+        return resDto;
+    }
     @ExceptionHandler(Throwable.class)
     @ResponseBody
     public PublicResponseDto processCommonThrowable(Throwable ex) {
