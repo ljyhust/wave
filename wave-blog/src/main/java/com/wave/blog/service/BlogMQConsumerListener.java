@@ -21,7 +21,7 @@ import java.util.List;
  * blog 消息消费处理
  */
 @Slf4j
-@Service("blogMQConsumer")
+@Service("blogMQConsumerListen")
 public class BlogMQConsumerListener implements MessageListenerConcurrently {
     
     @Autowired
@@ -42,6 +42,7 @@ public class BlogMQConsumerListener implements MessageListenerConcurrently {
                 }
             } catch (UnsupportedEncodingException | WaveException e) {
                 log.error("====> message {} code error {}", messageExt.getMsgId(), e);
+                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
             }
         }
     

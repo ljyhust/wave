@@ -21,6 +21,7 @@ import com.wave.user.dto.vo.MyConcernUserVo;
 import com.wave.user.dto.vo.MyFancyUserVo;
 import com.wave.user.service.FriendRelationService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
@@ -89,10 +90,10 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         }
         // res vo
         MyFancyUserVo myFancyUserVo = new MyFancyUserVo();
-        List<UserInfoDto> userInfos = getFriendUserInfos(userId, "fancyUserId", userConcernDao);
+        List<UserInfoDto> userInfos = getFriendUserInfos(userId, "fancyUserId", userFancyDao);
         myFancyUserVo.setUserId(userId);
-        bucket.setAsync(myFancyUserVo);
         myFancyUserVo.setFancyUserList(userInfos);
+        bucket.setAsync(myFancyUserVo, RandomUtils.nextInt(10, 100), TimeUnit.SECONDS);
         return myFancyUserVo;
     }
 
@@ -108,6 +109,7 @@ public class FriendRelationServiceImpl implements FriendRelationService{
         userFancyEntity.setFancyUserId(userId);
 
         // 删除缓存
+        // 加读写锁，防止点关注时多次点击或提交，或防止读写不一致
         writeLockCloudRun(MY_CONCERN_USER_WRITE_READ_LOCK_PREFIX + userId, new Runnable() {
             @Override
             public void run() {
@@ -173,15 +175,15 @@ public class FriendRelationServiceImpl implements FriendRelationService{
     }
     
     private PageVo pageFriendUsers(List<UserInfoDto> userList, Integer pageIndex, Integer pageSize) throws WaveException {
+        PageVo<UserInfoDto> userInfoDtoPageVo = new PageVo<>();
+        userInfoDtoPageVo.setPageIndex(pageIndex);
+        userInfoDtoPageVo.setPageSize(pageSize);
         if (CollectionUtils.isEmpty(userList)) {
-            return new PageVo();
+            return userInfoDtoPageVo;
         }
         // 查询用户信息
         List<UserInfoDto> res = userList.stream().skip(pageIndex * pageSize).limit(pageSize)
                 .collect(Collectors.toList());
-        PageVo<UserInfoDto> userInfoDtoPageVo = new PageVo<>();
-        userInfoDtoPageVo.setPageIndex(pageIndex);
-        userInfoDtoPageVo.setPageSize(pageSize);
         userInfoDtoPageVo.setPageCount(userList.size() / pageSize);
         userInfoDtoPageVo.setRows(res);
         return userInfoDtoPageVo;
@@ -204,7 +206,7 @@ public class FriendRelationServiceImpl implements FriendRelationService{
             return null;
         }
 
-        // 批量查询的分库分表是怎么做的？
+        // 批量查询的分库分表是怎么做的？sql语句在所有条件的hash库中都执行一次，然后聚合结果
         List<UserInfoEntity> userInfoEntities = userInfoDao.selectBatchIds(concernUserIds);
 
         List<UserInfoDto> concernUserInfos = new ArrayList<>();

@@ -1,4 +1,4 @@
-package com.wave.user.config;
+package com.wave.blog.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

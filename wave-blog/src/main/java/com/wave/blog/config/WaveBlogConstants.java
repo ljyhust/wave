@@ -16,4 +16,8 @@ public class WaveBlogConstants {
     
     public final static String FANCY_BLOG_REDIS_PREFIX = "FANCY_BLOG";
     
+    public final static String WAVE_BLOG_MQ_CONFIG_PRODUCER_GROUP = "blog_transaction_group";
+    
+    public final static String WAVE_BLOG_MQ_CONFIG_CONSUMER_GROUP = "blog_transaction_consumer_group";
+    
 }

@@ -3,16 +3,22 @@ package com.wave.exception;
 import com.wave.common.PublicResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.sql.SQLTransientConnectionException;
 
 @Slf4j
 @ControllerAdvice
-public class ControllerExceptionAdvice {
+public class ControllerExceptionAdvice implements ResponseBodyAdvice {
 
     @ExceptionHandler(WaveException.class)
     @ResponseBody
@@ -45,5 +51,22 @@ public class ControllerExceptionAdvice {
             log.error("====>  错误拦截 {}", ex);
         }
         return resDto;
+    }
+    
+    @Override
+    public boolean supports(MethodParameter methodParameter, Class aClass) {
+        return true;
+    }
+    
+    @Override
+    public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass,
+            ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
+        if (o instanceof PublicResponseDto) {
+            PublicResponseDto res = (PublicResponseDto) o;
+            if (res.getCode() != 200) {
+                serverHttpResponse.setStatusCode(HttpStatus.resolve(res.getCode()));
+            }
+        }
+        return o;
     }
 }

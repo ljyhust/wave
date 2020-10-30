@@ -10,7 +10,7 @@ public class IdGeneratorManager {
     public static void registerGenerator(String resource, ServiceIdGenerator idGenerator) {
         ServiceIdGenerator serviceIdGenerator = manager.get(resource);
         if (null != serviceIdGenerator) {
-            throw new IllegalArgumentException(resource + " has id generator");
+            return;
         }
         manager.put(resource, idGenerator);
     }

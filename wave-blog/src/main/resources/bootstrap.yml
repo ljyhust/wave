@@ -8,6 +8,8 @@ spring:
           data-id: wave-blog.properties
         shared-configs[1]:
           data-id: redis.properties
+        shared-configs[2]:
+          data-id: rocketmq.properties
         timeout: 10000
         config-retry-time: 2
         refresh-enabled: true
@@ -23,4 +25,4 @@ spring:
 server:
   servlet:
     context-path: /wave-blog
-  port: 11001
+  port: 9005

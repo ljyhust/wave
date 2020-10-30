@@ -1,5 +1,6 @@
 package com.wave.blog.config;
 
+import com.wave.common.WaveConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
@@ -20,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
-@DependsOn({"BlogMQProducerCheckListener"})
 public class MqConfiguration {
     
     @Value("${rocket.namesrvAddr:}")
@@ -34,7 +34,7 @@ public class MqConfiguration {
     @Bean(name = "blogMQProducer", destroyMethod = "shutdown")
     public TransactionMQProducer blogTransactionMQProducer(
             @Autowired @Qualifier("blogMQProducerListen") TransactionListener listener) {
-        TransactionMQProducer transactionMQProducer = new TransactionMQProducer("blog_transaction_group");
+        TransactionMQProducer transactionMQProducer = new TransactionMQProducer(WaveBlogConstants.WAVE_BLOG_MQ_CONFIG_PRODUCER_GROUP);
         // set thread info to response mq check commit request
         ThreadPoolExecutor blogMqCheckStateThread = new ThreadPoolExecutor(2, 5, 100, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(2048), new ThreadFactory() {
@@ -63,9 +63,9 @@ public class MqConfiguration {
      */
     @Bean(name = "blogMQConsumer", destroyMethod = "shutdown")
     public DefaultMQPushConsumer blogTransactionMQConsumer(
-            @Autowired @Qualifier("blogMQConsumer") MessageListenerConcurrently listener) {
+            @Autowired @Qualifier("blogMQConsumerListen") MessageListenerConcurrently listener) {
         DefaultMQPushConsumer blogTransactionConsumer = new DefaultMQPushConsumer(
-                "blog_transaction_consumer_group");
+                WaveBlogConstants.WAVE_BLOG_MQ_CONFIG_CONSUMER_GROUP);
         blogTransactionConsumer.setNamesrvAddr(rocketNamesrvAddr);
         try {
             blogTransactionConsumer.subscribe(WaveBlogConstants.WAVE_BLOG_MQ_TOPIC, "*");

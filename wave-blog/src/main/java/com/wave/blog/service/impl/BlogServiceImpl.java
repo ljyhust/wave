@@ -23,6 +23,7 @@ import com.wave.consistency.id.IdGeneratorManager;
 import com.wave.exception.WaveException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.SendStatus;
@@ -31,13 +32,18 @@ import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.redisson.api.RBucket;
+import org.redisson.api.RScript;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.LongCodec;
+import org.redisson.client.codec.StringCodec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -137,7 +143,7 @@ public class BlogServiceImpl implements BlogService {
             }
             if (result.getLocalTransactionState() == LocalTransactionState.UNKNOW) {
                 TransactionMQClientResult transactionResult = new TransactionMQClientResult();
-                transactionResult.setCode(1);
+                transactionResult.setTransactionCode(1);
                 transactionResult.setTimeout(60000);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("blogId", messageBlogMqDto.getBlogId());
@@ -210,20 +216,59 @@ public class BlogServiceImpl implements BlogService {
         // redis zset fans_blog:userId blogId createTs
         JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(dto.getData()));
         JSONArray fancyUserIdList = jsonObject.getJSONArray("fancyUserIdList");
+        if (CollectionUtils.isEmpty(fancyUserIdList)) {
+            return true;
+        }
+        long score = createTs.getTime();
         switch (messageBlogMqDto.getOperationType()) {
             case WaveBlogConstants.WAVE_BLOG_MSG_TYPE_NEW:
-                long score = createTs.getTime();
-                // TODO 循环是否有优化空间，优化网络
-                for (Object o : fancyUserIdList) {
+                // TODO 循环是否有优化空间，优化网络，lua脚本
+                // zadd key score member
+                // eval "redis.call('zadd' keys[1] agv[1] argv[2] ...)" 1 fancy_blog_redis:xxx  132143 id1  3345 id2 ....
+                // eval "redis.call('zadd', KEYS[1], ARGV[1], ARGV[2], ARGV[3], ARGV[4])" 1 fancy_blog_redis:test 1 id1  2 id2
+                StringBuffer scriptBuffer = new StringBuffer();
+                String format = "redis.call('zadd', KEYS[%d], ARGV[1], ARGV[2]);";
+                List<Object> keys = new ArrayList<>();
+                for(int i = 1; i <= fancyUserIdList.size(); i++) {
+                    String script = String.format(format, i);
+                    scriptBuffer.append(script);
+                    keys.add(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + fancyUserIdList.get(i - 1).toString());
+                }
+                scriptBuffer.append("return nil;");
+                Object res = null;
+                try {
+                    res = redisson.getScript(LongCodec.INSTANCE)
+                            .eval(RScript.Mode.READ_WRITE, scriptBuffer.toString(), RScript.ReturnType.STATUS, keys,
+                                    Long.valueOf(score), messageBlogMqDto.getBlogId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                log.info("=====> redis res  {}", res);
+                /*for (Object o : fancyUserIdList) {
                     redisson.getScoredSortedSet(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + o.toString())
                             .addAsync(score, messageBlogMqDto.getBlogId());
-                }
+                }*/
                 break;
             case WaveBlogConstants.WAVE_BLOG_MSG_TYPE_DELELTE:
-                for (Object o : fancyUserIdList) {
+                // eval "redis.call('zrem' keys[1] argv[1] argv[2] ...)" 1 fancy_blog_redis:xxx  id1  id2 ...
+                StringBuffer scriptBuffer2 = new StringBuffer();
+                String format2 = "redis.call('zrem', KEYS[%d], ARGV[1]);";
+                List<Object> keys2 = new ArrayList<>();
+                for(int i = 1; i <= fancyUserIdList.size(); i++) {
+                    String script = String.format(format2, i);
+                    scriptBuffer2.append(script);
+                    keys2.add(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + fancyUserIdList.get(i - 1).toString());
+                }
+                scriptBuffer2.append("return nil;");
+                Object res2 = redisson.getScript(LongCodec.INSTANCE)
+                        .eval(RScript.Mode.READ_WRITE, scriptBuffer2.toString(), RScript.ReturnType.STATUS, keys2,
+                                messageBlogMqDto.getBlogId());
+                log.info("=====> redis res  {}", res2);
+                /*for (Object o : fancyUserIdList) {
                     redisson.getScoredSortedSet(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + o.toString())
                             .removeAsync(messageBlogMqDto.getBlogId().toString());
-                }
+                }*/
                 break;
             default:
                 break;
