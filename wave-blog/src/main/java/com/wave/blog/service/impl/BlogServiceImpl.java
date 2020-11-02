@@ -32,6 +32,7 @@ import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.redisson.api.RBucket;
+import org.redisson.api.RScoredSortedSet;
 import org.redisson.api.RScript;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.LongCodec;
@@ -44,6 +45,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class BlogServiceImpl implements BlogService {
     
-    private final String FANCY_BLOG_REDIS_PREFIX = "FANCY_BLOG";
+    private final String FANCY_BLOG_REDIS_PREFIX = "FANCY_BLOG:";
     
     private final String BLOG_ID_REDIS_PREFIX = "BLOG_ID:";
     
@@ -88,6 +90,33 @@ public class BlogServiceImpl implements BlogService {
         blogDtoPageVo.setPageCount(page.getPages());
         blogDtoPageVo.setTotal((int)page.getTotal());
         return blogDtoPageVo;
+    }
+    
+    @Override
+    public PageVo<BlogDto> queryFocusBlog(Integer pageIndex, Integer pageSize, Long userId) throws WaveException {
+        // query redis queue
+        RScoredSortedSet<Long> sortedSet = redisson.getScoredSortedSet(FANCY_BLOG_REDIS_PREFIX + userId, LongCodec.INSTANCE);
+        int start = (pageIndex - 1) * pageSize;
+        int end = pageIndex * pageSize - 1;
+        int total = sortedSet.size();
+        Collection<Long> blogIds = sortedSet.valueRange(start, end);
+        // query blog from db
+        List<BlogEntity> blogEntities = blogDao.selectBatchIds(blogIds);
+        List<BlogDto> vos = new ArrayList<>();
+        blogEntities.forEach(e -> {
+            BlogDto blogDto = new BlogDto();
+            blogDto.setContent(e.getContent());
+            blogDto.setId(e.getId());
+            blogDto.setUserId(e.getUserId());
+            vos.add(blogDto);
+        });
+        PageVo<BlogDto> resPage = new PageVo<>();
+        resPage.setTotal(total);
+        resPage.setPageCount(total / pageSize + 1);
+        resPage.setPageIndex(pageIndex);
+        resPage.setPageSize(pageSize);
+        resPage.setRows(vos);
+        return resPage;
     }
     
     @Override
@@ -219,7 +248,7 @@ public class BlogServiceImpl implements BlogService {
         if (CollectionUtils.isEmpty(fancyUserIdList)) {
             return true;
         }
-        long score = createTs.getTime();
+        long score = 0 - createTs.getTime();
         switch (messageBlogMqDto.getOperationType()) {
             case WaveBlogConstants.WAVE_BLOG_MSG_TYPE_NEW:
                 // TODO 循环是否有优化空间，优化网络，lua脚本
@@ -232,7 +261,7 @@ public class BlogServiceImpl implements BlogService {
                 for(int i = 1; i <= fancyUserIdList.size(); i++) {
                     String script = String.format(format, i);
                     scriptBuffer.append(script);
-                    keys.add(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + fancyUserIdList.get(i - 1).toString());
+                    keys.add(FANCY_BLOG_REDIS_PREFIX + fancyUserIdList.get(i - 1).toString());
                 }
                 scriptBuffer.append("return nil;");
                 Object res = null;
@@ -258,7 +287,7 @@ public class BlogServiceImpl implements BlogService {
                 for(int i = 1; i <= fancyUserIdList.size(); i++) {
                     String script = String.format(format2, i);
                     scriptBuffer2.append(script);
-                    keys2.add(WaveBlogConstants.FANCY_BLOG_REDIS_PREFIX + ":" + fancyUserIdList.get(i - 1).toString());
+                    keys2.add(FANCY_BLOG_REDIS_PREFIX + fancyUserIdList.get(i - 1).toString());
                 }
                 scriptBuffer2.append("return nil;");
                 Object res2 = redisson.getScript(LongCodec.INSTANCE)

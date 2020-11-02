@@ -21,6 +21,16 @@ public interface BlogService {
     PageVo<BlogDto> queryMyBlog(Integer pageIndex, Integer pageSize, Long userId) throws WaveException;
     
     /**
+     * 查询关注的帖子
+     * @param pageIndex 页索引
+     * @param pageSize 页大小
+     * @param userId 登录者用户id
+     * @return
+     * @throws WaveException
+     */
+    PageVo<BlogDto> queryFocusBlog(Integer pageIndex, Integer pageSize, Long userId) throws WaveException;
+    
+    /**
      * 根据id查询帖子内容，入redis缓存
      * @param id
      * @return

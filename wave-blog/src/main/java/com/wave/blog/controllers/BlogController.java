@@ -76,4 +76,19 @@ public class BlogController {
                 .queryMyBlog(pageQueryRequestDto.getPageIndex(), pageQueryRequestDto.getPageSize(), userId);
         return PublicResponseUtil.okPublicResponseObjDto(blogDtoPageVo);
     }
+    
+    /**
+     * 查询关注的blog
+     * @param pageQueryRequestDto 分页参数
+     * @param userId 登录者id
+     * @return
+     * @throws WaveException
+     */
+    @PostMapping("focusBlog")
+    public PublicResponseObjDto queryFocusUserBlogs(@RequestBody PageQueryRequestDto pageQueryRequestDto,
+            @RequestHeader("userId") Long userId) throws WaveException {
+        PageVo<BlogDto> blogDtoPageVo = blogService
+                .queryFocusBlog(pageQueryRequestDto.getPageIndex(), pageQueryRequestDto.getPageSize(), userId);
+        return PublicResponseUtil.okPublicResponseObjDto(blogDtoPageVo);
+    }
 }

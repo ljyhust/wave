@@ -13,4 +13,6 @@ public class BlogDto implements Serializable {
     
     private String content;
     
+    private Long userId;
+    
 }

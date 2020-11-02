@@ -23,7 +23,7 @@
 
 - [ ] 首页热帖
 
-- [ ] 好友帖子
+- [x] 好友帖子
 sharding jdbc 如何完成in参数的跨库  
 sharding jdbc 如何完成跨库表分页？
 
