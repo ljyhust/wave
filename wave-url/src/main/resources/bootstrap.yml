@@ -2,17 +2,15 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 10.247.63.25:8848
-        namespace: 4b63b2be-f896-4436-b191-0bea48a5fa78
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
         shared-configs[0]:
-          data-id: wave-user.properties
-        shared-configs[1]:
-          data-id: redis.properties
+          data-id: wave-url.properties
         timeout: 10000
         config-retry-time: 2
       discovery:
-        server-addr: 10.247.63.25:8848
-        namespace: 4b63b2be-f896-4436-b191-0bea48a5fa78
+        server-addr: 192.168.2.21:8848
+        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
         #心跳超时时间，单位 millsecond
         heart-beat-timeout: 10000
     sentinel:
@@ -24,12 +22,18 @@ spring:
         order: 1
         url-patterns: /**
   application:
-    name: wave-user
+    name: wave-url
   main:
     allow-bean-definition-overriding: true
 server:
   servlet:
-    context-path: /wave-user
-  port: 9002
+    context-path: /wave-url
+  port: 9008
   tomcat:
     max-threads: 500
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: -1
+      logic-not-delete-value: 0

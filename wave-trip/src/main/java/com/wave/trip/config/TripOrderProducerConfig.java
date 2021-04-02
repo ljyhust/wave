@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * 行程订单配置
  */
 @Slf4j
-@Configuration
+//@Configuration
 public class TripOrderProducerConfig {
 
     @Value("${rocketmq.appId}")

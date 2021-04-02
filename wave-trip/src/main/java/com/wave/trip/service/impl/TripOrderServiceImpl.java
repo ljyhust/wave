@@ -44,8 +44,8 @@ public class TripOrderServiceImpl implements TripOrderService{
     @Autowired
     TripOrderUserDao tripOrderUserDao;
 
-    @Autowired
-    @Qualifier("tripOrderProducer")
+    //@Autowired
+    //@Qualifier("tripOrderProducer")
     SunlandsProducer producer;
 
     @Autowired

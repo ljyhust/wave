@@ -2,8 +2,8 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.2.21:8848
-        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        server-addr: 10.247.63.25:8848
+        namespace: 4b63b2be-f896-4436-b191-0bea48a5fa78
         shared-configs[0]:
           data-id: wave-blog.properties
         shared-configs[1]:
@@ -14,15 +14,21 @@ spring:
         config-retry-time: 2
         refresh-enabled: true
       discovery:
-        server-addr: 192.168.2.21:8848
-        namespace: 8415f0d6-e965-4f58-908b-75ea6fa1947b
+        server-addr: 10.247.63.25:8848
+        namespace: 4b63b2be-f896-4436-b191-0bea48a5fa78
         #心跳超时时间，单位 millsecond
         heart-beat-timeout: 10000
+    sentinel:
+      enabled: true
+      transport:
+        port: 8920
+        dashboard: 10.247.63.25:13008
   application:
     name: wave-blog
-  main:
-    allow-bean-definition-overriding: true
 server:
   servlet:
     context-path: /wave-blog
   port: 9005
+feign:
+  sentinel:
+    enabled: true
