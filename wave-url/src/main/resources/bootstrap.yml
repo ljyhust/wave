@@ -25,6 +25,9 @@ spring:
     name: wave-url
   main:
     allow-bean-definition-overriding: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 server:
   servlet:
     context-path: /wave-url
@@ -37,3 +40,5 @@ mybatis-plus:
     db-config:
       logic-delete-value: -1
       logic-not-delete-value: 0
+
+shortUrlHost: http://tebs34.natappfree.cc/

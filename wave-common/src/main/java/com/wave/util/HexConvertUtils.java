@@ -13,9 +13,9 @@ public class HexConvertUtils {
         while (divisor > 0) {
             long remain = divisor % 36;
             if (remain >= 10) {
-                stff.append(remain - 10 + 'a');
+                stff.append((char) (remain - 10 + 'a'));
             } else {
-                stff.append(remain);
+                stff.append(remain + "");
             }
             divisor = divisor / 36;
         }

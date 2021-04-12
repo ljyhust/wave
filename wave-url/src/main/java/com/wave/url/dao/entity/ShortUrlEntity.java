@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @TableName("t_short_url")
@@ -19,9 +20,9 @@ public class ShortUrlEntity {
     
     private String md5;
     
-    private LocalDateTime createTs;
+    private Date createTs;
     
-    private LocalDateTime updateTs;
+    private Date updateTs;
     
     @TableLogic
     private Short status;

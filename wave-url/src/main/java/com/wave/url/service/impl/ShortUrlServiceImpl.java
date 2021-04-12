@@ -11,6 +11,7 @@ import com.wave.url.service.ShortUrlService;
 import com.wave.url.service.UrlIdService;
 import com.wave.util.HexConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -19,6 +20,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class ShortUrlServiceImpl implements ShortUrlService {
+    
+    @Value("${shortUrlHost}")
+    private String shortUrlHost;
     
     @Autowired
     private ShortUrlMapper shortUrlMapper;
@@ -36,7 +40,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         if (!CollectionUtils.isEmpty(shortUrlEntityList)) {
             if (shortUrlEntityList.size() > 1)
                 throw new WaveException(WaveException.SERVER_ERROR, "原生url存在多个");
-            return HexConvertUtils.dicTo36Hex(shortUrlEntityList.get(0).getId());
+            return shortUrlHost + HexConvertUtils.dicTo36Hex(shortUrlEntityList.get(0).getId());
         }
         // 不存在
         long urlId = urlIdService.urlIdGenerate();
@@ -45,7 +49,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         shortUrlEntity.setId(urlId);
         shortUrlEntity.setMd5(md5);
         shortUrlMapper.insert(shortUrlEntity);
-        return HexConvertUtils.dicTo36Hex(urlId);
+        return shortUrlHost + HexConvertUtils.dicTo36Hex(urlId);
     }
     
 }

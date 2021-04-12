@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @TableName("t_url_id")
@@ -18,9 +19,9 @@ public class UrlIdEntity {
     
     private Long endNum;
     
-    private LocalDateTime createTs;
+    private Date createTs;
     
-    private LocalDateTime updateTs;
+    private Date updateTs;
     
     private Short status;
 }

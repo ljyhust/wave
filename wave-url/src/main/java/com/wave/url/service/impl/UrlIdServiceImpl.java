@@ -15,15 +15,17 @@ public class UrlIdServiceImpl implements UrlIdService {
     
     private volatile AtomicLong idStart;
     
+    private volatile long maxId;
+    
     @Autowired
     private UrlIdMapper urlIdMapper;
     
     @Override
     public long urlIdGenerate() {
-        if (null == idStart) {
+        if (null == idStart || idStart.longValue() > maxId) {
             ((UrlIdServiceImpl) AopContext.currentProxy()).initIdStart();
         }
-        return idStart.incrementAndGet();
+        return idStart.getAndIncrement();
     }
     
     @Transactional
@@ -33,9 +35,13 @@ public class UrlIdServiceImpl implements UrlIdService {
             return;
         }
         UrlIdEntity urlIdEntity = new UrlIdEntity();
+        urlIdEntity.setStartNum(0L);
+        urlIdEntity.setEndNum(0L);
         urlIdMapper.insert(urlIdEntity);
         urlIdEntity.setEndNum(urlIdEntity.getId() * 1000);
         urlIdEntity.setStartNum(urlIdEntity.getEndNum() - 999);
         urlIdMapper.updateById(urlIdEntity);
+        idStart = new AtomicLong(urlIdEntity.getStartNum());
+        maxId = urlIdEntity.getEndNum();
     }
 }
