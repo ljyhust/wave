@@ -56,7 +56,11 @@ sharding jdbc 如何完成跨库表分页？
 
 ## wave-gate 网关
 
-## wave-zk zk一致性使用
+## wave-file 分布式文件
+
+zk一致性使用，用于协调文件读写
+
+uploadurl 申请、授权 -> 上传 -> 返回读链接
 
 ## wave-demo 技术应用demo
 

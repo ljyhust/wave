@@ -30,8 +30,13 @@ public class UrlIdServiceImpl implements UrlIdService {
     
     @Transactional
     @Override
-    public void initIdStart() {
-        if (null != idStart) {
+    public synchronized void initIdStart() {
+        // 如果觉得synchronized锁不够好，因为存在远程调用，还有一种方案是 CAS + 版本号的方法
+        // 开启事务之前，我们是认为当前 maxId / 1000 == 数据库的最大id的
+        // oldVersion = maxId / 1000;
+        // if (idStart.longValue() < oldVersion) return;
+        // insert添加id = oloVersion + 1的，如果失败，则重试几次，但容易活锁
+        if (null != idStart && idStart.longValue() <= maxId) {
             return;
         }
         UrlIdEntity urlIdEntity = new UrlIdEntity();

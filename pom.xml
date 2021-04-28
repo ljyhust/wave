@@ -14,10 +14,11 @@
         <module>wave-common</module>
         <module>wave-base</module>
         <module>wave-trip</module>
-        <module>wave-trip-infrastructure</module>
+        <!--<module>wave-trip-infrastructure</module> -->
         <module>wave-user-api</module>
         <module>wave-blog</module>
         <module>wave-url</module>
+        <module>wave-file</module>
     </modules>
 
     <parent>
