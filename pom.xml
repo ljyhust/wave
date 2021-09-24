@@ -19,6 +19,7 @@
         <module>wave-blog</module>
         <module>wave-url</module>
         <module>wave-file</module>
+        <module>wave-play</module>
     </modules>
 
     <parent>

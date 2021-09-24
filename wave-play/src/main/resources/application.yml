@@ -1,0 +1,12 @@
+server:
+  port: 8080
+  tomcat:
+    max-threads: 500
+
+redis:
+  address: redis://localhost:6379
+  passwd: test
+  timeout: 20000
+
+topK:
+  size: 10
