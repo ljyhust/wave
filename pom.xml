@@ -20,6 +20,7 @@
         <module>wave-url</module>
         <module>wave-file</module>
         <module>wave-play</module>
+        <module>wave-workflow</module>
     </modules>
 
     <parent>

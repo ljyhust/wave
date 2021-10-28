@@ -1,0 +1,23 @@
+server:
+  port: 9098
+  servlet:
+    context-path: /camunda
+logging:
+  level:
+    root: debug
+
+spring:
+  datasource:
+    hikari:
+      camunda:
+        driver-class-name: com.mysql.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/camunda?autoReconnect=true&useSSL=false
+        username: root
+        password: admin
+        connection-test-query: SELECT 1 FROM DUAL
+        minimum-idle: 5
+        idle-timeout: 60000
+        maximum-pool-size: 20
+        pool-name: tms-camunda-HikariCP
+        connection-timeout: 30000
+        max-lifetime: 600000
