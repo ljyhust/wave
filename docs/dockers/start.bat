@@ -1,0 +1,1 @@
+docker run -it --name my-dev-env -v D:/xm_work:/app -v D:/maven_repo:/maven/repository dev-env /bin/bash
