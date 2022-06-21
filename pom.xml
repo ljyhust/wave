@@ -34,7 +34,7 @@
         <alibaba.cloud.version>2.2.0.RELEASE</alibaba.cloud.version>
         <mybatis-plus.version>3.3.0</mybatis-plus.version>
         <lombok.version>1.16.20</lombok.version>
-        <mysql-conn.version>5.1.45</mysql-conn.version>
+        <mysql-conn.version>8.0.28</mysql-conn.version>
         <common-lang3.version>3.8.1</common-lang3.version>
         <jedis.version>2.9.0</jedis.version>
         <redisson.version>3.13.0</redisson.version>
